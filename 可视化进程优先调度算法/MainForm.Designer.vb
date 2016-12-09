@@ -33,7 +33,7 @@ Partial Class MainForm
         '
         'SystemClockTimer
         '
-        Me.SystemClockTimer.Interval = 500
+        Me.SystemClockTimer.Interval = 50
         '
         'CreateJobLabel
         '

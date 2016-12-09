@@ -49,11 +49,6 @@
     Private Sub DrawUI()
         Dim UnityBitmap As Bitmap = New Bitmap(My.Resources.UnityResource.FormBGI, FormSize)
         Dim UnityGraphics As Graphics = Graphics.FromImage(UnityBitmap)
-        CreateJobLabel.DrawToBitmap(UnityBitmap, New Rectangle(CreateJobLabel.Location, CreateJobLabel.Size))
-        CloseLabel.DrawToBitmap(UnityBitmap, New Rectangle(CloseLabel.Location, CloseLabel.Size))
-        PlayPauseLabel.DrawToBitmap(UnityBitmap, New Rectangle(PlayPauseLabel.Location, PlayPauseLabel.Size))
-        InfoLabel.DrawToBitmap(UnityBitmap, New Rectangle(InfoLabel.Location, InfoLabel.Size))
-        SystemClockLabel.DrawToBitmap(UnityBitmap, New Rectangle(SystemClockLabel.Location, SystemClockLabel.Size))
         UnityGraphics.DrawImage(TimeLineBitmap, TimeLineRectangle.Location)
         If SystemClock > -1 Then UnityGraphics.DrawImage(My.Resources.UnityResource.TimeLine, TimeLineRectangle.Left + CoordinateRectangle.Left - 15 + IIf(SystemClock > 60, 60, SystemClock) * 8, TimeLineRectangle.Top)
         UnityGraphics.DrawString("作业调度算法-短作业优先", Me.Font, Brushes.DarkGoldenrod, 30, 10)
@@ -74,6 +69,11 @@
             UnityGraphics.DrawString(WaittingJobList(Index).Name & IIf(ShortestJID = Index, " (当前等待队列里最短作业)", vbNullString), Me.Font, Brushes.Aqua, WaitRectangle.Left, WaitRectangle.Top + Index * 15)
         Next
         UnityGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left, WaitRectangle.Bottom)
+        CreateJobLabel.DrawToBitmap(UnityBitmap, New Rectangle(CreateJobLabel.Location, CreateJobLabel.Size))
+        CloseLabel.DrawToBitmap(UnityBitmap, New Rectangle(CloseLabel.Location, CloseLabel.Size))
+        PlayPauseLabel.DrawToBitmap(UnityBitmap, New Rectangle(PlayPauseLabel.Location, PlayPauseLabel.Size))
+        InfoLabel.DrawToBitmap(UnityBitmap, New Rectangle(InfoLabel.Location, InfoLabel.Size))
+        SystemClockLabel.DrawToBitmap(UnityBitmap, New Rectangle(SystemClockLabel.Location, SystemClockLabel.Size))
         DrawImage(Me, UnityBitmap)
     End Sub
 
@@ -174,9 +174,9 @@
                 ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / 60, ExecuteRectangle.Height)
             Else
                 If AllJobList.Count = 0 Then
-                    InfoLabel.Text = "所有作业已经完成，正在生成新的作业队列！"
-                    Reset()
-                    CreateJobList()
+                    InfoLabel.Text = "所有作业已经完成！"
+                    SystemClockTimer.Stop()
+                    PlayPauseLabel.Text = "开始播放"
                     Return False
                 End If
             End If
@@ -218,6 +218,10 @@
     End Sub
 
     Private Sub PlayPauseLabel_Click(sender As Object, e As EventArgs) Handles PlayPauseLabel.Click
+        If AllJobList.Count = 0 Then
+            Reset()
+            CreateJobList()
+        End If
         SystemClockTimer.Enabled = Not SystemClockTimer.Enabled
         PlayPauseLabel.Text = IIf(SystemClockTimer.Enabled, "暂停"， "开始播放")
         DrawUI()
