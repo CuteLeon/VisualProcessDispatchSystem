@@ -110,7 +110,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="ProcessClass.vb" />
+    <Compile Include="JobClass.vb" />
     <Compile Include="UnityResource.Designer.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

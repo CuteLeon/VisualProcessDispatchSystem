@@ -24,7 +24,7 @@ Partial Class MainForm
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Me.SystemClockTimer = New System.Windows.Forms.Timer(Me.components)
-        Me.CreateProcessLabel = New System.Windows.Forms.Label()
+        Me.CreateJobLabel = New System.Windows.Forms.Label()
         Me.PlayPauseLabel = New System.Windows.Forms.Label()
         Me.CloseLabel = New System.Windows.Forms.Label()
         Me.InfoLabel = New System.Windows.Forms.Label()
@@ -35,18 +35,18 @@ Partial Class MainForm
         '
         Me.SystemClockTimer.Interval = 500
         '
-        'CreateProcessLabel
+        'CreateJobLabel
         '
-        Me.CreateProcessLabel.AutoSize = True
-        Me.CreateProcessLabel.BackColor = System.Drawing.Color.Transparent
-        Me.CreateProcessLabel.Font = New System.Drawing.Font("微软雅黑", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
-        Me.CreateProcessLabel.ForeColor = System.Drawing.Color.BlueViolet
-        Me.CreateProcessLabel.Location = New System.Drawing.Point(386, 5)
-        Me.CreateProcessLabel.Name = "CreateProcessLabel"
-        Me.CreateProcessLabel.Size = New System.Drawing.Size(80, 17)
-        Me.CreateProcessLabel.TabIndex = 0
-        Me.CreateProcessLabel.Text = "重新生成进程"
-        Me.CreateProcessLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.CreateJobLabel.AutoSize = True
+        Me.CreateJobLabel.BackColor = System.Drawing.Color.Transparent
+        Me.CreateJobLabel.Font = New System.Drawing.Font("微软雅黑", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.CreateJobLabel.ForeColor = System.Drawing.Color.BlueViolet
+        Me.CreateJobLabel.Location = New System.Drawing.Point(386, 5)
+        Me.CreateJobLabel.Name = "CreateJobLabel"
+        Me.CreateJobLabel.Size = New System.Drawing.Size(80, 17)
+        Me.CreateJobLabel.TabIndex = 0
+        Me.CreateJobLabel.Text = "重新生成进程"
+        Me.CreateJobLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'PlayPauseLabel
         '
@@ -110,7 +110,7 @@ Partial Class MainForm
         Me.Controls.Add(Me.InfoLabel)
         Me.Controls.Add(Me.CloseLabel)
         Me.Controls.Add(Me.PlayPauseLabel)
-        Me.Controls.Add(Me.CreateProcessLabel)
+        Me.Controls.Add(Me.CreateJobLabel)
         Me.DoubleBuffered = True
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.Name = "MainForm"
@@ -121,7 +121,7 @@ Partial Class MainForm
 
     End Sub
     Friend WithEvents SystemClockTimer As System.Windows.Forms.Timer
-    Friend WithEvents CreateProcessLabel As Label
+    Friend WithEvents CreateJobLabel As Label
     Friend WithEvents PlayPauseLabel As Label
     Friend WithEvents CloseLabel As Label
     Friend WithEvents InfoLabel As Label

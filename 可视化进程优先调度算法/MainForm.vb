@@ -2,27 +2,27 @@
     Private Declare Function ReleaseCapture Lib "user32" () As Integer
     Private Declare Function SendMessageA Lib "user32" (ByVal hwnd As Integer, ByVal wMsg As Integer, ByVal wParam As Integer, lParam As VariantType) As Integer
     Private Const PaddingSize As Integer = 15 '元素之间间隔像素
-    Private Const ProcessCount As Integer = 9 '进程总数
+    Private Const JobCount As Integer = 9 '作业总数
     Private Const Max_SystemTime As Integer = 60 '系统最大执行时间
     Dim FormSize As Size = New Size(540, 320)
     Dim TimeLineRectangle As Rectangle = New Rectangle(15, 28, 510, 108) '显示时间线的区域
     Dim CoordinateRectangle As Rectangle = New Rectangle(15, 3, 480, 90) '时间线坐标系在TimeLineRectangle内的区域
-    Dim AllProcessList As New List(Of ProcessClass) '当前时刻后的所有的进程列表
-    Dim WaittingProcessList As New List(Of ProcessClass) '等待运行的进程列表
-    Dim ExecuteProcess As ProcessClass '正在运行的进程
+    Dim AllJobList As New List(Of JobClass) '当前时刻后的所有的作业列表
+    Dim WaittingJobList As New List(Of JobClass) '等待运行的作业列表
+    Dim ExecuteJob As JobClass '正在运行的作业
     Dim DispathRectangle As Rectangle = New Rectangle(20, 170, 500, 140) '调度区域
     Dim ExecuteRectangle As Rectangle = New Rectangle(20, 175, 500, 15)
     Dim WaitRectangle As Rectangle = New Rectangle(150, 192, 370, 120)
     Dim TimeLineBitmap As Bitmap '记录时间线图像
     Dim SystemClock As Integer = -1 '系统时间
-    Dim ShortestPID As Integer '当前等待队列里最短进程（即下次运行的进程）
-    Dim ExecuteTime As Integer '当前执行的进程开始执行的时间
+    Dim ShortestJID As Integer '当前等待队列里最短作业（即下次运行的作业）
+    Dim ExecuteTime As Integer '当前执行的作业开始执行的时间
 
 #Region "窗体事件"
 
     Private Sub MainForm_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
         Reset()
-        CreateProcessList()
+        CreateJobList()
     End Sub
 
     Private Sub MainForm_MouseDown(sender As Object, e As MouseEventArgs) Handles Me.MouseDown, SystemClockLabel.MouseDown
@@ -49,29 +49,29 @@
     Private Sub DrawUI()
         Dim UnityBitmap As Bitmap = New Bitmap(My.Resources.UnityResource.FormBGI, FormSize)
         Dim UnityGraphics As Graphics = Graphics.FromImage(UnityBitmap)
-        CreateProcessLabel.DrawToBitmap(UnityBitmap, New Rectangle(CreateProcessLabel.Location, CreateProcessLabel.Size))
+        CreateJobLabel.DrawToBitmap(UnityBitmap, New Rectangle(CreateJobLabel.Location, CreateJobLabel.Size))
         CloseLabel.DrawToBitmap(UnityBitmap, New Rectangle(CloseLabel.Location, CloseLabel.Size))
         PlayPauseLabel.DrawToBitmap(UnityBitmap, New Rectangle(PlayPauseLabel.Location, PlayPauseLabel.Size))
         InfoLabel.DrawToBitmap(UnityBitmap, New Rectangle(InfoLabel.Location, InfoLabel.Size))
         SystemClockLabel.DrawToBitmap(UnityBitmap, New Rectangle(SystemClockLabel.Location, SystemClockLabel.Size))
         UnityGraphics.DrawImage(TimeLineBitmap, TimeLineRectangle.Location)
         If SystemClock > -1 Then UnityGraphics.DrawImage(My.Resources.UnityResource.TimeLine, TimeLineRectangle.Left + CoordinateRectangle.Left - 15 + IIf(SystemClock > 60, 60, SystemClock) * 8, TimeLineRectangle.Top)
-        UnityGraphics.DrawString("进程调度算法-短进程优先", Me.Font, Brushes.DarkGoldenrod, 30, 10)
-        UnityGraphics.DrawString("正在等待的进程队列：", Me.Font, Brushes.DodgerBlue, WaitRectangle.Left - 120, WaitRectangle.Top)
-        If Not (ExecuteProcess Is Nothing) Then
-            If ExecuteProcessInWait() Then
-                InfoLabel.Text = "开始执行： " & ExecuteProcess.Name
-                UnityGraphics.DrawString("正在执行：" & ExecuteProcess.Name, Me.Font, Brushes.Black, 201, DispathRectangle.Top - 9)
-                UnityGraphics.DrawString("正在执行：" & ExecuteProcess.Name, Me.Font, New SolidBrush(ExecuteProcess.Color), 200, DispathRectangle.Top - 10)
+        UnityGraphics.DrawString("作业调度算法-短作业优先", Me.Font, Brushes.DarkGoldenrod, 30, 10)
+        UnityGraphics.DrawString("正在等待的作业队列：", Me.Font, Brushes.DodgerBlue, WaitRectangle.Left - 120, WaitRectangle.Top)
+        If Not (ExecuteJob Is Nothing) Then
+            If ExecuteJobInWait() Then
+                InfoLabel.Text = "开始执行： " & ExecuteJob.Name
+                UnityGraphics.DrawString("正在执行：" & ExecuteJob.Name, Me.Font, Brushes.Black, 201, DispathRectangle.Top - 9)
+                UnityGraphics.DrawString("正在执行：" & ExecuteJob.Name, Me.Font, New SolidBrush(ExecuteJob.Color), 200, DispathRectangle.Top - 10)
                 ExecuteRectangle.Location = New Point(WaitRectangle.Left - WaitRectangle.Width * (SystemClock - ExecuteTime) / 60, ExecuteRectangle.Top)
-                UnityGraphics.FillRectangle(New SolidBrush(ExecuteProcess.Color), ExecuteRectangle)
+                UnityGraphics.FillRectangle(New SolidBrush(ExecuteJob.Color), ExecuteRectangle)
                 UnityGraphics.DrawRectangle(Pens.Red, ExecuteRectangle)
             End If
         End If
-        For Index As Integer = 0 To WaittingProcessList.Count - 1
-            UnityGraphics.FillRectangle(New SolidBrush(WaittingProcessList(Index).Color), New Rectangle(WaitRectangle.Left, WaitRectangle.Top + Index * 15, WaitRectangle.Width * WaittingProcessList(Index).TimeLength / 60, 15))
-            UnityGraphics.DrawString(WaittingProcessList(Index).Name & IIf(ShortestPID = Index, " (当前等待队列里最短进程)", vbNullString), Me.Font, Brushes.Black, WaitRectangle.Left + 1, WaitRectangle.Top + Index * 15 + 1)
-            UnityGraphics.DrawString(WaittingProcessList(Index).Name & IIf(ShortestPID = Index, " (当前等待队列里最短进程)", vbNullString), Me.Font, Brushes.Aqua, WaitRectangle.Left, WaitRectangle.Top + Index * 15)
+        For Index As Integer = 0 To WaittingJobList.Count - 1
+            UnityGraphics.FillRectangle(New SolidBrush(WaittingJobList(Index).Color), New Rectangle(WaitRectangle.Left, WaitRectangle.Top + Index * 15, WaitRectangle.Width * WaittingJobList(Index).TimeLength / 60, 15))
+            UnityGraphics.DrawString(WaittingJobList(Index).Name & IIf(ShortestJID = Index, " (当前等待队列里最短作业)", vbNullString), Me.Font, Brushes.Black, WaitRectangle.Left + 1, WaitRectangle.Top + Index * 15 + 1)
+            UnityGraphics.DrawString(WaittingJobList(Index).Name & IIf(ShortestJID = Index, " (当前等待队列里最短作业)", vbNullString), Me.Font, Brushes.Aqua, WaitRectangle.Left, WaitRectangle.Top + Index * 15)
         Next
         UnityGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left, WaitRectangle.Bottom)
         DrawImage(Me, UnityBitmap)
@@ -89,11 +89,11 @@
             TimeLineGraphics.DrawString(Index, Me.Font, Brushes.Yellow, PaddingSize + 8 * Index - 4, CoordinateRectangle.Bottom + 2)
             TimeLineGraphics.DrawLine(TempPen, CoordinateRectangle.Left + 8 * Index - 1, CoordinateRectangle.Top, CoordinateRectangle.Left + 8 * Index - 1, CoordinateRectangle.Bottom)
         Next
-        For Index = 0 To AllProcessList.Count - 1
-            TimeLineGraphics.DrawString("PID-" & Index, Me.Font, New SolidBrush(AllProcessList(Index).Color), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllProcessList(Index).StartTime / Max_SystemTime)), CoordinateRectangle.Top + Index * 10 + 5)
-            TimeLineGraphics.FillEllipse(New SolidBrush(AllProcessList(Index).Color), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllProcessList(Index).StartTime / Max_SystemTime)) - 4, CoordinateRectangle.Top + Index * 10 + 2, 5, 5)
-            TimeLineGraphics.DrawLine(New Pen(AllProcessList(Index).Color, 2), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllProcessList(Index).StartTime / Max_SystemTime)),
-                                      CoordinateRectangle.Top + Index * 10 + 5, CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllProcessList(Index).EndTime / Max_SystemTime)), CoordinateRectangle.Top + Index * 10 + 5)
+        For Index = 0 To AllJobList.Count - 1
+            TimeLineGraphics.DrawString("PID-" & Index, Me.Font, New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).StartTime / Max_SystemTime)), CoordinateRectangle.Top + Index * 10 + 5)
+            TimeLineGraphics.FillEllipse(New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).StartTime / Max_SystemTime)) - 4, CoordinateRectangle.Top + Index * 10 + 2, 5, 5)
+            TimeLineGraphics.DrawLine(New Pen(AllJobList(Index).Color, 2), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).StartTime / Max_SystemTime)),
+                                      CoordinateRectangle.Top + Index * 10 + 5, CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).EndTime / Max_SystemTime)), CoordinateRectangle.Top + Index * 10 + 5)
         Next
         Return TimeLineBitmap
     End Function
@@ -112,71 +112,71 @@
 
     Private Sub Reset()
         SystemClock = 0
-        ShortestPID = -1
+        ShortestJID = -1
         ExecuteTime = -1
-        ExecuteProcess = Nothing
+        ExecuteJob = Nothing
         SystemClockLabel.Text = "系统时间：0"
     End Sub
 
-    Private Sub CreateProcessList()
-        '刷新进程列表
-        AllProcessList.Clear()
-        WaittingProcessList.Clear()
-        AllProcessList = New List(Of ProcessClass)
-        WaittingProcessList = New List(Of ProcessClass)
-        For Index As Integer = 0 To ProcessCount - 1
-            Dim ProcessStartTime As Integer = VBMath.Rnd * (Max_SystemTime - 1)
-            Dim ProcessEndTime As Integer = ProcessStartTime + 1 + (Max_SystemTime - ProcessStartTime - 1) * VBMath.Rnd
-            Dim ProcessDemo As ProcessClass = New ProcessClass(Index, "进程-" & Index, ProcessStartTime, ProcessEndTime)
-            AllProcessList.Add(ProcessDemo)
+    Private Sub CreateJobList()
+        '刷新作业列表
+        AllJobList.Clear()
+        WaittingJobList.Clear()
+        AllJobList = New List(Of JobClass)
+        WaittingJobList = New List(Of JobClass)
+        For Index As Integer = 0 To JobCount - 1
+            Dim JobStartTime As Integer = VBMath.Rnd * (Max_SystemTime - 1)
+            Dim JobEndTime As Integer = JobStartTime + 1 + (Max_SystemTime - JobStartTime - 1) * VBMath.Rnd
+            Dim JobDemo As JobClass = New JobClass(Index, "作业-" & Index, JobStartTime, JobEndTime)
+            AllJobList.Add(JobDemo)
         Next
         TimeLineBitmap = DrawTimeLine()
-        InfoLabel.Text = "已创建随机的进程列表！"
+        InfoLabel.Text = "已创建随机的作业列表！"
         DrawUI()
         GC.Collect()
     End Sub
 
-    Private Sub WaitProcessInAll()
-        '在所有进程列表里找到达的进程
+    Private Sub WaitJobInAll()
+        '在所有作业列表里找到达的作业
         Dim PIDs As String = vbNullString
-        Dim Index As Integer = 0, ListCount As Integer = AllProcessList.Count
+        Dim Index As Integer = 0, ListCount As Integer = AllJobList.Count
         Do While Index < ListCount
-            If AllProcessList(Index).StartTime = SystemClock Then
-                PIDs &= AllProcessList(Index).ID & " & "
-                If ExecuteProcess Is Nothing Then
+            If AllJobList(Index).StartTime = SystemClock Then
+                PIDs &= AllJobList(Index).ID & " & "
+                If ExecuteJob Is Nothing Then
                     ExecuteTime = SystemClock
-                    ExecuteProcess = AllProcessList(Index)
-                    ExecuteRectangle.Size = New Size(WaitRectangle.Width * ExecuteProcess.TimeLength / 60, ExecuteRectangle.Height)
-                    ShortestPID = -1
+                    ExecuteJob = AllJobList(Index)
+                    ExecuteRectangle.Size = New Size(WaitRectangle.Width * ExecuteJob.TimeLength / 60, ExecuteRectangle.Height)
+                    ShortestJID = -1
                 Else
-                    WaittingProcessList.Add(AllProcessList(Index))
-                    ShortestPID = GetShortestProcess()
+                    WaittingJobList.Add(AllJobList(Index))
+                    ShortestJID = GetShortestJob()
                 End If
-                AllProcessList.RemoveAt(Index)
+                AllJobList.RemoveAt(Index)
                 ListCount -= 1
             Else
                 Index += 1
             End If
         Loop
         If PIDs IsNot Nothing Then
-            InfoLabel.Text = "进程 " + PIDs.Remove(PIDs.Length - 3) + " 加入等待执行队列！"
+            InfoLabel.Text = "作业 " + PIDs.Remove(PIDs.Length - 3) + " 加入等待执行队列！"
         End If
     End Sub
 
-    Private Function ExecuteProcessInWait() As Boolean
-        '从等待队列寻找需要被执行的进程
-        If SystemClock >= ExecuteTime + ExecuteProcess.TimeLength Then
-            If WaittingProcessList.Count > 0 Then
-                ExecuteProcess = WaittingProcessList(ShortestPID)
-                WaittingProcessList.RemoveAt(ShortestPID)
-                ShortestPID = GetShortestProcess()
+    Private Function ExecuteJobInWait() As Boolean
+        '从等待队列寻找需要被执行的作业
+        If SystemClock >= ExecuteTime + ExecuteJob.TimeLength Then
+            If WaittingJobList.Count > 0 Then
+                ExecuteJob = WaittingJobList(ShortestJID)
+                WaittingJobList.RemoveAt(ShortestJID)
+                ShortestJID = GetShortestJob()
                 ExecuteTime = SystemClock
-                ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteProcess.EndTime - ExecuteProcess.StartTime) / 60, ExecuteRectangle.Height)
+                ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / 60, ExecuteRectangle.Height)
             Else
-                If AllProcessList.Count = 0 Then
-                    InfoLabel.Text = "所有进程已经完成，正在生成新的进程队列！"
+                If AllJobList.Count = 0 Then
+                    InfoLabel.Text = "所有作业已经完成，正在生成新的作业队列！"
                     Reset()
-                    CreateProcessList()
+                    CreateJobList()
                     Return False
                 End If
             End If
@@ -184,11 +184,11 @@
         Return True
     End Function
 
-    Private Function GetShortestProcess() As Integer
-        ' 从等待进程列表里找到最短时间的进程ID
+    Private Function GetShortestJob() As Integer
+        ' 从等待作业列表里找到最短时间的作业ID
         Dim PID As Integer = 0
-        For Index As Integer = 1 To WaittingProcessList.Count - 1
-            If (WaittingProcessList(Index).TimeLength < WaittingProcessList(PID).TimeLength) Then
+        For Index As Integer = 1 To WaittingJobList.Count - 1
+            If (WaittingJobList(Index).TimeLength < WaittingJobList(PID).TimeLength) Then
                 PID = Index
             End If
         Next
@@ -198,21 +198,21 @@
 
 #Region "控件事件"
 
-    Private Sub CreateProcessLabel_Click(sender As Object, e As EventArgs) Handles CreateProcessLabel.Click
+    Private Sub CreateJobLabel_Click(sender As Object, e As EventArgs) Handles CreateJobLabel.Click
         Reset()
-        CreateProcessList()
+        CreateJobList()
     End Sub
 
     Private Sub CloseLabel_Click(sender As Object, e As EventArgs) Handles CloseLabel.Click
         Me.Close()
     End Sub
 
-    Private Sub Label_MouseEnter(sender As Object, e As EventArgs) Handles CreateProcessLabel.MouseEnter, CloseLabel.MouseEnter, PlayPauseLabel.MouseEnter
+    Private Sub Label_MouseEnter(sender As Object, e As EventArgs) Handles CreateJobLabel.MouseEnter, CloseLabel.MouseEnter, PlayPauseLabel.MouseEnter
         CType(sender, Label).ForeColor = Color.Red
         DrawUI()
     End Sub
 
-    Private Sub Label_MouseLeave(sender As Object, e As EventArgs) Handles CreateProcessLabel.MouseLeave, CloseLabel.MouseLeave, PlayPauseLabel.MouseLeave
+    Private Sub Label_MouseLeave(sender As Object, e As EventArgs) Handles CreateJobLabel.MouseLeave, CloseLabel.MouseLeave, PlayPauseLabel.MouseLeave
         CType(sender, Label).ForeColor = Color.BlueViolet
         DrawUI()
     End Sub
@@ -226,7 +226,7 @@
     Private Sub SystemClock_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles SystemClockTimer.Tick
         SystemClock += 1
         SystemClockLabel.Text = "系统时间：" & SystemClock
-        WaitProcessInAll()
+        WaitJobInAll()
         DrawUI()
         GC.Collect()
     End Sub
