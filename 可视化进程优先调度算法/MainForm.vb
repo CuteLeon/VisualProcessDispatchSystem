@@ -17,6 +17,7 @@
     Dim SystemClock As Integer = -1 '系统时间
     Dim ShortestJID As Integer '当前等待队列里最短作业（即下次运行的作业）
     Dim ExecuteTime As Integer '当前执行的作业开始执行的时间
+    Dim SystemLog As String = vbNullString
 
 #Region "窗体事件"
 
@@ -114,8 +115,10 @@
         SystemClock = 0
         ShortestJID = -1
         ExecuteTime = -1
+        SystemLog = vbNullString
         ExecuteJob = Nothing
         SystemClockLabel.Text = "系统时间：0"
+        SystemLog &= String.Format("系统时间：{0}  ||  重置参数！", SystemClock) & vbCrLf
     End Sub
 
     Private Sub CreateJobList()
@@ -132,6 +135,7 @@
         Next
         TimeLineBitmap = DrawTimeLine()
         InfoLabel.Text = "已创建随机的作业列表！"
+        SystemLog &= String.Format("系统时间：{0}  ||  创建新的随机作业队列！", SystemClock) & vbCrLf
         DrawUI()
         GC.Collect()
     End Sub
@@ -160,6 +164,7 @@
         Loop
         If PIDs IsNot Nothing Then
             InfoLabel.Text = "作业 " + PIDs.Remove(PIDs.Length - 3) + " 加入等待执行队列！"
+            SystemLog &= String.Format("系统时间：{0}  ||  作业 {1} 加入等待执行队列！", SystemClock， PIDs.Remove(PIDs.Length - 3)) & vbCrLf
         End If
     End Sub
 
@@ -168,6 +173,7 @@
         If SystemClock >= ExecuteTime + ExecuteJob.TimeLength Then
             If WaittingJobList.Count > 0 Then
                 ExecuteJob = WaittingJobList(ShortestJID)
+                SystemLog &= String.Format("系统时间：{0}  ||  开始执行作业 {1}！", SystemClock, ShortestJID) & vbCrLf
                 WaittingJobList.RemoveAt(ShortestJID)
                 ShortestJID = GetShortestJob()
                 ExecuteTime = SystemClock
@@ -175,8 +181,10 @@
             Else
                 If AllJobList.Count = 0 Then
                     InfoLabel.Text = "所有作业已经完成！"
+                    SystemLog &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
                     SystemClockTimer.Stop()
                     PlayPauseLabel.Text = "开始播放"
+                    MsgBox(SystemLog)
                     Return False
                 End If
             End If
@@ -185,11 +193,12 @@
     End Function
 
     Private Function GetShortestJob() As Integer
-        ' 从等待作业列表里找到最短时间的作业ID
+        ' 从等待作业列表里找到最短时间的作业ID（并不是作业的ID属性，而是作业在WaittingJobList里的下标）
         Dim PID As Integer = 0
         For Index As Integer = 1 To WaittingJobList.Count - 1
             If (WaittingJobList(Index).TimeLength < WaittingJobList(PID).TimeLength) Then
                 PID = Index
+                SystemLog &= String.Format("系统时间：{0}  ||  找到最短作业：{1}", SystemClock, PID) & vbCrLf
             End If
         Next
         Return PID
@@ -207,12 +216,12 @@
         Me.Close()
     End Sub
 
-    Private Sub Label_MouseEnter(sender As Object, e As EventArgs) Handles CreateJobLabel.MouseEnter, CloseLabel.MouseEnter, PlayPauseLabel.MouseEnter
+    Private Sub Label_MouseEnter(sender As Object, e As EventArgs) Handles PlayPauseLabel.MouseEnter, CreateJobLabel.MouseEnter, CloseLabel.MouseEnter
         CType(sender, Label).ForeColor = Color.Red
         DrawUI()
     End Sub
 
-    Private Sub Label_MouseLeave(sender As Object, e As EventArgs) Handles CreateJobLabel.MouseLeave, CloseLabel.MouseLeave, PlayPauseLabel.MouseLeave
+    Private Sub Label_MouseLeave(sender As Object, e As EventArgs) Handles PlayPauseLabel.MouseLeave, CreateJobLabel.MouseLeave, CloseLabel.MouseLeave
         CType(sender, Label).ForeColor = Color.BlueViolet
         DrawUI()
     End Sub
