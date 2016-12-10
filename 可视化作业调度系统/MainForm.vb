@@ -41,6 +41,22 @@ Public Class MainForm
     Dim DispathCellWidth As Double
     Dim DispathCellHeight As Double
 
+    Private Structure ExecuteLog
+        Dim JobName As String
+        Dim ExecuteTime As Integer
+        Dim TimeLength As Integer
+        Dim Color As Color
+
+        Public Sub New(jName As String, eTime As Integer, tLength As Integer, jColor As Color)
+            JobName = jName
+            ExecuteTime = eTime
+            TimeLength = tLength
+            Color = jColor
+        End Sub
+    End Structure
+    '记录执行记录以生成结果流程图
+    Dim ExecuteLogs As List(Of ExecuteLog)
+
 #Region "窗体事件"
 
     Private Sub MainForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
