@@ -401,10 +401,19 @@ Public Class MainForm
                 Else
                     If AllJobList.Count = 0 Then
                         If ReplayCheckBox.Checked Then
-                            CreateJobListButton_Click(Nothing, New EventArgs)
-                            TimeLineLabel.Show()
+                            SystemClock = 0
+                            NextJobSubscript = -1
+                            ExecuteTime = -1
+                            SystemClockLabel.Text = "0"
+                            DispathPanel.Image = Nothing
+                            TimeLineLabel.Location = New Point(CoordinateRectangle.Left - 14, CoordinateRectangle.Top - 1)
+                            ExecuteLabel.Hide()
+                            WaitLabel.Hide()
+                            NextJobTipLabel.Hide()
+                            LogLabel.Text = "重置系统配置！" & vbCrLf
+                            CreateJobsList()
+                            TimeLinePanel.Image = CreateTimeLineImage()
                             ExecuteFunction()
-                            SystemClockTimer.Start()
                         Else
                             LogLabel.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
                             SystemClockTimer.Stop()
@@ -462,6 +471,7 @@ Public Class MainForm
         CheckJobArrive() '检查任务到达
         TimeLineLabel.Left = Math.Min(CoordinateRectangle.Right - 14, CInt(CoordinateRectangle.Left + TimeCellWidth * SystemClock - 14))
         DispathPanel.Image = CreateDispathImage() '刷新调度区域图像
+        RecordPanel.Image = CreateRecordImage()
         CheckJobCompelet() '检查任务结束
     End Sub
 
@@ -528,7 +538,6 @@ Public Class MainForm
         SystemClock += 1
         SystemClockLabel.Text = SystemClock
         ExecuteFunction()
-        RecordPanel.Image = CreateRecordImage()
         GC.Collect()
     End Sub
 
