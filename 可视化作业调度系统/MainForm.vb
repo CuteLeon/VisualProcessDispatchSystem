@@ -332,7 +332,7 @@ Public Class MainForm
                     NextJobSubscript = -1
                 Else
                     WaitJobList.Add(AllJobList(Index))
-                    If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
+                    NextJobSubscript = GetNextJobSubscript()
                 End If
                 AllJobList.RemoveAt(Index)
                 ListCount -= 1
