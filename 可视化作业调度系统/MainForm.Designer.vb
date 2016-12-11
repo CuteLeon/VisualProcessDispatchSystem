@@ -38,12 +38,14 @@ Partial Class MainForm
         Me.TimeLineLabel = New System.Windows.Forms.Label()
         Me.WaitLabel = New System.Windows.Forms.Label()
         Me.ExecuteLabel = New System.Windows.Forms.Label()
-        Me.LogLabel = New System.Windows.Forms.TextBox()
         Me.NextJobTipLabel = New System.Windows.Forms.Label()
         Me.DispathComboBox = New System.Windows.Forms.ComboBox()
         Me.SettingButton = New System.Windows.Forms.Label()
         Me.RecordPanel = New System.Windows.Forms.Label()
         Me.ReplayCheckBox = New System.Windows.Forms.CheckBox()
+        Me.LogLabel = New System.Windows.Forms.Label()
+        Me.LabelScrollBar = New System.Windows.Forms.Label()
+        Me.LabelTextBox = New System.Windows.Forms.Label()
         Me.SuspendLayout()
         '
         'CloseButton
@@ -235,20 +237,6 @@ Partial Class MainForm
         Me.ExecuteLabel.Text = "正在执行："
         Me.ExecuteLabel.Visible = False
         '
-        'LogLabel
-        '
-        Me.LogLabel.BackColor = System.Drawing.Color.Black
-        Me.LogLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.LogLabel.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
-        Me.LogLabel.ForeColor = System.Drawing.Color.Lime
-        Me.LogLabel.Location = New System.Drawing.Point(510, 84)
-        Me.LogLabel.Multiline = True
-        Me.LogLabel.Name = "LogLabel"
-        Me.LogLabel.ReadOnly = True
-        Me.LogLabel.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.LogLabel.Size = New System.Drawing.Size(277, 302)
-        Me.LogLabel.TabIndex = 17
-        '
         'NextJobTipLabel
         '
         Me.NextJobTipLabel.AutoSize = True
@@ -313,6 +301,38 @@ Partial Class MainForm
         Me.ReplayCheckBox.Text = "完成后自动重置并播放"
         Me.ReplayCheckBox.UseVisualStyleBackColor = False
         '
+        'LogLabel
+        '
+        Me.LogLabel.BackColor = System.Drawing.Color.Transparent
+        Me.LogLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.LogLabel.Location = New System.Drawing.Point(482, 90)
+        Me.LogLabel.Name = "LogLabel"
+        Me.LogLabel.Size = New System.Drawing.Size(275, 360)
+        Me.LogLabel.TabIndex = 23
+        '
+        'LabelScrollBar
+        '
+        Me.LabelScrollBar.BackColor = System.Drawing.Color.Transparent
+        Me.LabelScrollBar.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.LabelScrollBar.ForeColor = System.Drawing.Color.White
+        Me.LabelScrollBar.Image = Global.可视化作业调度系统.My.Resources.UnityResource.ScrollBar
+        Me.LabelScrollBar.Location = New System.Drawing.Point(676, 68)
+        Me.LabelScrollBar.Name = "LabelScrollBar"
+        Me.LabelScrollBar.Size = New System.Drawing.Size(32, 72)
+        Me.LabelScrollBar.TabIndex = 24
+        Me.LabelScrollBar.Visible = False
+        '
+        'LabelTextBox
+        '
+        Me.LabelTextBox.AutoSize = True
+        Me.LabelTextBox.BackColor = System.Drawing.Color.Transparent
+        Me.LabelTextBox.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.LabelTextBox.ForeColor = System.Drawing.Color.Aqua
+        Me.LabelTextBox.Location = New System.Drawing.Point(609, 142)
+        Me.LabelTextBox.Name = "LabelTextBox"
+        Me.LabelTextBox.Size = New System.Drawing.Size(0, 20)
+        Me.LabelTextBox.TabIndex = 25
+        '
         'MainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -321,12 +341,14 @@ Partial Class MainForm
         Me.BackgroundImage = Global.可视化作业调度系统.My.Resources.UnityResource.BGI
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.ClientSize = New System.Drawing.Size(799, 399)
+        Me.Controls.Add(Me.LabelTextBox)
+        Me.Controls.Add(Me.LabelScrollBar)
+        Me.Controls.Add(Me.LogLabel)
         Me.Controls.Add(Me.ReplayCheckBox)
         Me.Controls.Add(Me.RecordPanel)
         Me.Controls.Add(Me.SettingButton)
         Me.Controls.Add(Me.DispathComboBox)
         Me.Controls.Add(Me.NextJobTipLabel)
-        Me.Controls.Add(Me.LogLabel)
         Me.Controls.Add(Me.ExecuteLabel)
         Me.Controls.Add(Me.WaitLabel)
         Me.Controls.Add(Me.TimeLineLabel)
@@ -367,10 +389,12 @@ Partial Class MainForm
     Friend WithEvents TimeLineLabel As Label
     Friend WithEvents WaitLabel As Label
     Friend WithEvents ExecuteLabel As Label
-    Friend WithEvents LogLabel As TextBox
     Friend WithEvents NextJobTipLabel As Label
     Friend WithEvents DispathComboBox As ComboBox
     Friend WithEvents SettingButton As Label
     Friend WithEvents RecordPanel As Label
     Friend WithEvents ReplayCheckBox As CheckBox
+    Friend WithEvents LogLabel As Label
+    Friend WithEvents LabelScrollBar As Label
+    Friend WithEvents LabelTextBox As Label
 End Class

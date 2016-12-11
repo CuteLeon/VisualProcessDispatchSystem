@@ -1,5 +1,11 @@
 ﻿Imports System.ComponentModel
 
+'两个label嵌套
+'容器label设置panel背景色  内容label全透明
+'右侧滚动条
+'内置label 自动调整大小 大小改变时1.计算 滚动条的位置 和 滚动条滚动单位距离是内容label上下滚动的距离2.自动定位到底部
+'内容label 的top 和 bottom不允许出现  滚动条的top bottom 不予必须隐藏
+
 Public Class MainForm
     Private Const Max_JobCount As Integer = 12 '必须与 JobColors 个数匹配
     Private Const ButtonAlphaDefault As Integer = 50
@@ -90,6 +96,7 @@ Public Class MainForm
         TimeLinePanel.BackColor = Color.FromArgb(50, Color.White)
         DispathPanel.BackColor = Color.FromArgb(50, Color.Gray)
         RecordPanel.BackColor = Color.FromArgb(50, Color.Gray)
+        LogLabel.BackColor = Color.FromArgb(50, Color.White)
 
         '调整容器控件的位置和尺寸
         TimeLinePanel.Location = New Point(15, CreateJobListButton.Bottom + 15)
@@ -100,6 +107,11 @@ Public Class MainForm
         RecordPanel.Size = New Size(TimeLinePanel.Width, Me.Height - DispathPanel.Bottom - 30)
         LogLabel.Location = New Point(TimeLinePanel.Right + 15, TimeLinePanel.Top)
         LogLabel.Size = New Size((Me.Width - 45) * 0.3, RecordPanel.Bottom - TimeLinePanel.Top)
+
+        LabelTextBox.Parent = LogLabel
+        LabelScrollBar.Parent = LogLabel
+        LabelTextBox.Location = Point.Empty
+        LabelScrollBar.Location = New Point(LogLabel.Width - LabelScrollBar.Width, 0)
 
         CoordinateRectangle = New Rectangle(15, 25, TimeLinePanel.Width - 30, TimeLinePanel.Height - 45)
         TimeCellWidth = CoordinateRectangle.Width / Max_SystemTime
@@ -214,7 +226,7 @@ Public Class MainForm
         WaitLabel.Hide()
         NextJobTipLabel.Hide()
         TimeLineLabel.Location = New Point(CoordinateRectangle.Left - 14, CoordinateRectangle.Top - 1)
-        LogLabel.Text = "重置系统配置！" & vbCrLf
+        LabelTextBox.Text = "重置系统配置！" & vbCrLf
     End Sub
 
     ''' <summary>
@@ -224,16 +236,16 @@ Public Class MainForm
         AllJobList.Clear()
         WaitJobList.Clear()
         ExecuteLogs.Clear()
-        LogLabel.Text &= "开始重新生成作业队列..." & vbCrLf
+        LabelTextBox.Text &= "开始重新生成作业队列..." & vbCrLf
         For Index As Integer = 0 To Max_JobCount - 1
             Dim JobStartTime As Integer = SystemRandom.Next(Max_SystemTime)
             Dim JobEndTime As Integer = JobStartTime + 1 + SystemRandom.Next(Max_SystemTime - JobStartTime)
             Dim InsJob As JobClass = New JobClass(Index, "作业-" & Index, JobStartTime, JobEndTime, JobColors(Index))
             AllJobList.Add(InsJob)
-            LogLabel.Text &= String.Format("    生成作业：{0} / 时间：{1}-{2}", InsJob.Name, InsJob.StartTime, InsJob.EndTime) & vbCrLf
+            LabelTextBox.Text &= String.Format("    生成作业：{0} / 时间：{1}-{2}", InsJob.Name, InsJob.StartTime, InsJob.EndTime) & vbCrLf
         Next
-        LogLabel.Text &= "生成作业队列完毕！" & vbCrLf
-        LogLabel.Text &= "================" & vbCrLf
+        LabelTextBox.Text &= "生成作业队列完毕！" & vbCrLf
+        LabelTextBox.Text &= "================" & vbCrLf
     End Sub
 
     ''' <summary>
@@ -368,7 +380,7 @@ Public Class MainForm
             End If
         Loop
         If JIDs <> vbNullString Then
-            LogLabel.Text &= String.Format("系统时间：{0}  ||  作业 {1} 加入等待执行队列！", SystemClock, JIDs.Remove(JIDs.Length - 3)) & vbCrLf
+            LabelTextBox.Text &= String.Format("系统时间：{0}  ||  作业 {1} 加入等待执行队列！", SystemClock, JIDs.Remove(JIDs.Length - 3)) & vbCrLf
         End If
     End Sub
 
@@ -381,7 +393,7 @@ Public Class MainForm
                 ExecuteJob = WaitJobList(NextJobSubscript)
                 Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
                 ExecuteLogs.Add(ExecuteLog)
-                LogLabel.Text &= String.Format("系统时间：{0}  ||  开始执行 {1}！", SystemClock, ExecuteJob.Name) & vbCrLf
+                LabelTextBox.Text &= String.Format("系统时间：{0}  ||  开始执行 {1}！", SystemClock, ExecuteJob.Name) & vbCrLf
                 WaitJobList.RemoveAt(NextJobSubscript)
                 If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
                 ExecuteTime = SystemClock
@@ -390,7 +402,7 @@ Public Class MainForm
         Else
             If SystemClock >= ExecuteTime + ExecuteJob.TimeLength Then
                 If WaitJobList.Count > 0 Then
-                    LogLabel.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
+                    LabelTextBox.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
                     ExecuteJob = WaitJobList(NextJobSubscript)
                     Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
                     ExecuteLogs.Add(ExecuteLog)
@@ -410,12 +422,12 @@ Public Class MainForm
                             ExecuteLabel.Hide()
                             WaitLabel.Hide()
                             NextJobTipLabel.Hide()
-                            LogLabel.Text = "重置系统配置！" & vbCrLf
+                            LabelTextBox.Text = "重置系统配置！" & vbCrLf
                             CreateJobsList()
                             TimeLinePanel.Image = CreateTimeLineImage()
                             ExecuteFunction()
                         Else
-                            LogLabel.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
+                            LabelTextBox.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
                             SystemClockTimer.Stop()
                             PlayPauseButton.Text = "播放   "
                             PlayPauseButton.Image = My.Resources.UnityResource.Play
@@ -442,7 +454,7 @@ Public Class MainForm
                 For Index As Integer = 1 To WaitJobList.Count - 1
                     If (WaitJobList(Index).TimeLength < WaitJobList(JobSubscript).TimeLength) Then JobSubscript = Index
                 Next
-                LogLabel.Text &= String.Format("系统时间：{0}  ||  找到最短作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
+                LabelTextBox.Text &= String.Format("系统时间：{0}  ||  找到最短作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
                 Return JobSubscript
             Case 2
                 '最高响应比优先-HRN
@@ -452,7 +464,7 @@ Public Class MainForm
                     ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(Index).StartTime + WaitJobList(Index).TimeLength) / WaitJobList(Index).TimeLength + 1, 2))
                 Next
                 Index = ResponseRatios.IndexOf(ResponseRatios.Max)
-                LogLabel.Text &= String.Format("系统时间：{0}  ||  找到最高响应比作业：{1}", SystemClock, WaitJobList(Index).Name) & vbCrLf
+                LabelTextBox.Text &= String.Format("系统时间：{0}  ||  找到最高响应比作业：{1}", SystemClock, WaitJobList(Index).Name) & vbCrLf
                 Return (Index)
             Case 3
                 '优先数调度-HPF
@@ -541,17 +553,6 @@ Public Class MainForm
         GC.Collect()
     End Sub
 
-    Private Sub LogLabel_TextChanged(sender As Object, e As EventArgs) Handles LogLabel.TextChanged
-        LogLabel.SelectionStart = LogLabel.Text.Length - 1
-        LogLabel.SelectionLength = 0
-        LogLabel.ScrollToCaret()
-    End Sub
-
-    Private Sub LogLabel_GotFocus(sender As Object, e As EventArgs) Handles LogLabel.GotFocus
-        LogLabel.SelectionStart = Math.Max(0, LogLabel.Text.Length - 1)
-        LogLabel.SelectionLength = 0
-    End Sub
-
     Private Sub DispathComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles DispathComboBox.SelectedIndexChanged
         If WaitJobList.Count > 0 Then
             NextJobSubscript = GetNextJobSubscript()
@@ -559,5 +560,38 @@ Public Class MainForm
         End If
     End Sub
 
+#End Region
+
+#Region "组合文本框事件"
+    Private Sub LabelScrollBar_MouseDown(sender As Object, e As MouseEventArgs) Handles LabelScrollBar.MouseDown
+        LogLabel.Tag = MousePosition.Y : LabelScrollBar.Tag = LabelScrollBar.Top
+        AddHandler LabelScrollBar.MouseMove, AddressOf LabelScrollBar_MouseMove
+    End Sub
+
+    Private Sub LabelScrollBar_MouseMove(sender As Object, e As MouseEventArgs)
+        If LabelTextBox.Height <= LogLabel.Height Then Exit Sub
+        Dim TopPosition As Integer = MousePosition.Y - LogLabel.Tag + LabelScrollBar.Tag
+        If TopPosition < 0 Or TopPosition > LogLabel.Height - LabelScrollBar.Height Then Exit Sub
+        LabelScrollBar.Top = TopPosition
+        LabelTextBox.Top = -(LabelTextBox.Height - LogLabel.Height) * (LabelScrollBar.Top / (LogLabel.Height - LabelScrollBar.Height))
+    End Sub
+
+    Private Sub LabelScrollBar_MouseUp(sender As Object, e As MouseEventArgs) Handles LabelScrollBar.MouseUp
+        RemoveHandler LabelScrollBar.MouseMove, AddressOf LabelScrollBar_MouseMove
+    End Sub
+
+    Private Sub LabelTextBox_Resize(sender As Object, e As EventArgs) Handles LabelTextBox.Resize
+        SystemClockTitle.Text = My.Computer.Clock.TickCount
+        If LabelTextBox.Height > LogLabel.Height Then
+            LabelScrollBar.Top = LogLabel.Height - LabelScrollBar.Height
+            LabelTextBox.Top = LogLabel.Height - LabelTextBox.Height
+            LabelScrollBar.Show()
+        Else
+            If LabelScrollBar.Visible Then
+                LabelTextBox.Location = Point.Empty
+                LabelScrollBar.Hide()
+            End If
+        End If
+    End Sub
 #End Region
 End Class
