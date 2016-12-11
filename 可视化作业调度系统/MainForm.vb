@@ -388,7 +388,7 @@ Public Class MainForm
                 ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
             End If
         Else
-            If SystemClock = ExecuteTime + ExecuteJob.TimeLength Then
+            If SystemClock >= ExecuteTime + ExecuteJob.TimeLength Then
                 If WaitJobList.Count > 0 Then
                     LogLabel.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
                     ExecuteJob = WaitJobList(NextJobSubscript)
@@ -402,6 +402,7 @@ Public Class MainForm
                     If AllJobList.Count = 0 Then
                         If ReplayCheckBox.Checked Then
                             CreateJobListButton_Click(Nothing, New EventArgs)
+                            TimeLineLabel.Show()
                             ExecuteFunction()
                             SystemClockTimer.Start()
                         Else
@@ -410,9 +411,9 @@ Public Class MainForm
                             PlayPauseButton.Text = "播放   "
                             PlayPauseButton.Image = My.Resources.UnityResource.Play
                             MsgBox("年轻的樵夫呦！-貌似队列里所有的作业都已经执行完毕了呢！-快来重置生成新的作业队列吧！".Replace("-", vbCrLf), MsgBoxStyle.Information, "Leon：)")
-                            ExecuteJob = Nothing
                         End If
                     End If
+                    ExecuteJob = Nothing
                 End If
             End If
         End If
@@ -438,11 +439,12 @@ Public Class MainForm
                 '最高响应比优先-HRN
                 ResponseRatios.Clear()
                 Dim Index As Integer
-                ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(0).StartTime + WaitJobList(0).TimeLength) / WaitJobList(0).TimeLength + 1, 2))
-                For Index = 1 To WaitJobList.Count - 1
+                For Index = 0 To WaitJobList.Count - 1
                     ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(Index).StartTime + WaitJobList(Index).TimeLength) / WaitJobList(Index).TimeLength + 1, 2))
                 Next
-                Return (ResponseRatios.IndexOf(ResponseRatios.Max))
+                Index = ResponseRatios.IndexOf(ResponseRatios.Max)
+                LogLabel.Text &= String.Format("系统时间：{0}  ||  找到最高响应比作业：{1}", SystemClock, WaitJobList(Index).Name) & vbCrLf
+                Return (Index)
             Case 3
                 '优先数调度-HPF
             Case 4
