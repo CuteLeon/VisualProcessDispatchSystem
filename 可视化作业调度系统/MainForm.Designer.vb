@@ -245,7 +245,7 @@ Partial Class MainForm
         Me.LogLabel.Name = "LogLabel"
         Me.LogLabel.ReadOnly = True
         Me.LogLabel.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.LogLabel.Size = New System.Drawing.Size(277, 238)
+        Me.LogLabel.Size = New System.Drawing.Size(277, 302)
         Me.LogLabel.TabIndex = 17
         '
         'NextJobTipLabel
@@ -295,7 +295,7 @@ Partial Class MainForm
         Me.RecordPanel.ForeColor = System.Drawing.Color.Transparent
         Me.RecordPanel.Location = New System.Drawing.Point(30, 331)
         Me.RecordPanel.Name = "RecordPanel"
-        Me.RecordPanel.Size = New System.Drawing.Size(759, 55)
+        Me.RecordPanel.Size = New System.Drawing.Size(474, 55)
         Me.RecordPanel.TabIndex = 21
         Me.RecordPanel.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '

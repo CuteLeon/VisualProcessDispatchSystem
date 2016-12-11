@@ -40,16 +40,19 @@ Public Class MainForm
     Dim TimeCellHeight As Double
     Dim DispathCellWidth As Double
     Dim DispathCellHeight As Double
+    Dim RecordCellWidth As Double
+    Dim RecordCellHeight As Double
     Dim ResponseRatios As New List(Of Double)
+
     Private Structure ExecuteLog
         Dim JobName As String
         Dim ExecuteTime As Integer
-        Dim TimeLength As Integer
+        Dim CompleteTime As Integer
         Dim Color As Color
         Public Sub New(jName As String, eTime As Integer, tLength As Integer, jColor As Color)
             JobName = jName
             ExecuteTime = eTime
-            TimeLength = tLength
+            CompleteTime = eTime + tLength
             Color = jColor
         End Sub
     End Structure
@@ -59,7 +62,6 @@ Public Class MainForm
 #Region "窗体事件"
 
     Private Sub MainForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        'TODO:纯色按钮控件一律放在这个数组里统一初始化并绑定事件
         Buttons = New Label() {CreateJobListButton, PlayPauseButton, SpeedDownButton, SpeedUpButton}
 
         SetStyle(ControlStyles.UserPaint Or ControlStyles.AllPaintingInWmPaint Or ControlStyles.OptimizedDoubleBuffer Or ControlStyles.ResizeRedraw Or ControlStyles.SupportsTransparentBackColor, True)
@@ -84,14 +86,17 @@ Public Class MainForm
         '设置容器控件的背景颜色
         TimeLinePanel.BackColor = Color.FromArgb(50, Color.White)
         DispathPanel.BackColor = Color.FromArgb(50, Color.Gray)
+        RecordPanel.BackColor = Color.FromArgb(50, Color.Gray)
 
         '调整容器控件的位置和尺寸
         TimeLinePanel.Location = New Point(15, CreateJobListButton.Bottom + 15)
-        TimeLinePanel.Size = New Size((Me.Width - 45) * 0.7, (Me.Height - TimeLinePanel.Top - 15) * 0.3)
+        TimeLinePanel.Size = New Size((Me.Width - 45) * 0.7, (Me.Height - TimeLinePanel.Top - 15) * 0.2)
         DispathPanel.Location = New Point(15, TimeLinePanel.Bottom + 15)
-        DispathPanel.Size = New Size(TimeLinePanel.Width, Me.Height - TimeLinePanel.Bottom - 30)
+        DispathPanel.Size = New Size(TimeLinePanel.Width, (Me.Height - TimeLinePanel.Top - 15) * 0.6)
+        RecordPanel.Location = New Point(TimeLinePanel.Left, DispathPanel.Bottom + 15)
+        RecordPanel.Size = New Size(TimeLinePanel.Width, Me.Height - DispathPanel.Bottom - 30)
         LogLabel.Location = New Point(TimeLinePanel.Right + 15, TimeLinePanel.Top)
-        LogLabel.Size = New Size((Me.Width - 45) * 0.3, DispathPanel.Bottom - TimeLinePanel.Top)
+        LogLabel.Size = New Size((Me.Width - 45) * 0.3, RecordPanel.Bottom - TimeLinePanel.Top)
 
         CoordinateRectangle = New Rectangle(15, 25, TimeLinePanel.Width - 30, TimeLinePanel.Height - 45)
         TimeCellWidth = CoordinateRectangle.Width / Max_SystemTime
@@ -102,6 +107,9 @@ Public Class MainForm
         WaitRectangle.Location = New Point(ExecuteRectangle.Left + ExecuteRectangle.Width * 0.3, ExecuteRectangle.Bottom + WaitLabel.Height + 10)
         WaitRectangle.Size = New Size(ExecuteRectangle.Right - WaitRectangle.Left, DispathCellHeight * Max_JobCount)
         DispathCellWidth = WaitRectangle.Width / Max_SystemTime
+
+        RecordCellWidth = RecordPanel.Width
+        RecordCellHeight = RecordPanel.Height / Max_JobCount
 
         TimeLineLabel.Parent = TimeLinePanel
         TimeLineLabel.Image = New Bitmap(My.Resources.UnityResource.TimeLine, 29, CoordinateRectangle.Height)
@@ -245,7 +253,7 @@ Public Class MainForm
             TempPen = New Pen(AllJobList(Index).Color, 2)
             TimeLineGraphics.DrawLine(TempPen, CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).StartTime / Max_SystemTime)), CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 5), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).EndTime / Max_SystemTime)), CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 5))
             TimeLineGraphics.FillEllipse(New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).StartTime / Max_SystemTime)) - 3, CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 2), 5, 5)
-            TimeLineGraphics.DrawString("JID-" & Index, Me.Font, New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + TimeCellWidth * AllJobList(Index).StartTime - 10), CoordinateRectangle.Top + Index * TimeCellHeight + 5)
+            TimeLineGraphics.DrawString("JID-" & Index, Me.Font, New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + TimeCellWidth * AllJobList(Index).StartTime - 10), CoordinateRectangle.Top + Index * TimeCellHeight - 7)
         Next
         Return TimeLineImage
     End Function
@@ -311,8 +319,8 @@ Public Class MainForm
         If Not (IsNothing(ExecuteJob)) Then
             If Not ExecuteLabel.Visible Then
                 ExecuteLabel.Show()
-                ExecuteLabel.Text = "正在执行：" & ExecuteJob.Name
             End If
+            ExecuteLabel.Text = "正在执行：" & ExecuteJob.Name
             TempPen = New Pen(ExecuteJob.Color, 1)
             ExecuteRectangle.Location = New Point(WaitRectangle.Left - WaitRectangle.Width * (SystemClock - ExecuteTime) / Max_SystemTime, ExecuteRectangle.Top)
 
@@ -336,7 +344,6 @@ Public Class MainForm
 
         Return DispathImage
     End Function
-
 
     ''' <summary>
     ''' 检查作业到达
@@ -369,6 +376,9 @@ Public Class MainForm
         If (IsNothing(ExecuteJob)) Then
             If WaitJobList.Count > 0 Then
                 ExecuteJob = WaitJobList(NextJobSubscript)
+                Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
+                ExecuteLogs.Add(ExecuteLog)
+                LogLabel.Text &= String.Format("系统时间：{0}  ||  开始执行 {1}！", SystemClock, ExecuteJob.Name) & vbCrLf
                 WaitJobList.RemoveAt(NextJobSubscript)
                 If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
                 ExecuteTime = SystemClock
@@ -379,6 +389,8 @@ Public Class MainForm
                 If WaitJobList.Count > 0 Then
                     LogLabel.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
                     ExecuteJob = WaitJobList(NextJobSubscript)
+                    Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
+                    ExecuteLogs.Add(ExecuteLog)
                     WaitJobList.RemoveAt(NextJobSubscript)
                     If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
                     ExecuteTime = SystemClock
@@ -435,12 +447,36 @@ Public Class MainForm
         Return 0
     End Function
 
+    ''' <summary>
+    ''' 系统时钟值守执行
+    ''' </summary>
     Private Sub ExecuteFunction()
         CheckJobArrive() '检查任务到达
         TimeLineLabel.Left = Math.Min(CoordinateRectangle.Right - 14, CInt(CoordinateRectangle.Left + TimeCellWidth * SystemClock - 14))
         DispathPanel.Image = CreateDispathImage() '刷新调度区域图像
         CheckJobCompelet() '检查任务结束
     End Sub
+
+    ''' <summary>
+    ''' 绘制值守
+    ''' </summary>
+    Private Function CreateRecordImage() As Bitmap
+        LogoLabel.Text = My.Computer.Clock.TickCount
+        Dim RecordImage As Bitmap = New Bitmap(RecordPanel.Width, RecordPanel.Height)
+        Dim RecordGraphics As Graphics = Graphics.FromImage(RecordImage)
+        Dim InsExecuteLog As ExecuteLog
+        RecordCellWidth = RecordPanel.Width / SystemClock
+        'RecordGraphics.FillRectangle(Brushes.Red, New Rectangle(0, 0, RecordCellWidth, RecordCellHeight))
+        For Index As Integer = 0 To ExecuteLogs.Count - 1
+            InsExecuteLog = ExecuteLogs(Index)
+            WaitLabel.Text = InsExecuteLog.JobName
+            'Debug.Print(CInt(InsExecuteLog.CompleteTime * RecordCellWidth) & " - " & CInt(Index * RecordCellHeight + 5))
+            RecordGraphics.DrawLine(New Pen(InsExecuteLog.Color, 2),
+                CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(Index * RecordCellHeight + 5),
+                CInt(InsExecuteLog.CompleteTime * RecordCellWidth), CInt(Index * RecordCellHeight + 5))
+        Next
+        Return RecordImage
+    End Function
 
 #End Region
 
@@ -483,9 +519,8 @@ Public Class MainForm
     Private Sub SystemClockTimer_Tick(sender As Object, e As EventArgs) Handles SystemClockTimer.Tick
         SystemClock += 1
         SystemClockLabel.Text = SystemClock
-
         ExecuteFunction()
-
+        RecordPanel.Image = CreateRecordImage()
         GC.Collect()
     End Sub
 
