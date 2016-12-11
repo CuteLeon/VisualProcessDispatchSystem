@@ -104,10 +104,10 @@ Public Class MainForm
         TimeCellWidth = CoordinateRectangle.Width / Max_SystemTime
         TimeCellHeight = CoordinateRectangle.Height / Max_JobCount
         DispathRectangle = New Rectangle(15, 25, DispathPanel.Width - 30, DispathPanel.Height - 45)
-        DispathCellHeight = (DispathRectangle.Height + ExecuteRectangle.Top - DispathRectangle.Top - WaitLabel.Height - 10) / (Max_JobCount + 1)
+        DispathCellHeight = (DispathRectangle.Height + ExecuteRectangle.Top - DispathRectangle.Top - WaitLabel.Height - 10 - Max_JobCount * 2) / (Max_JobCount + 1)
         ExecuteRectangle = New Rectangle(15, 50, DispathRectangle.Width, DispathCellHeight)
         WaitRectangle.Location = New Point(ExecuteRectangle.Left + ExecuteRectangle.Width * 0.3, ExecuteRectangle.Bottom + WaitLabel.Height + 10)
-        WaitRectangle.Size = New Size(ExecuteRectangle.Right - WaitRectangle.Left, DispathCellHeight * Max_JobCount)
+        WaitRectangle.Size = New Size(ExecuteRectangle.Right - WaitRectangle.Left, (DispathCellHeight + 2) * Max_JobCount)
         DispathCellWidth = WaitRectangle.Width / Max_SystemTime
 
         RecordCellWidth = RecordPanel.Width
@@ -283,7 +283,7 @@ Public Class MainForm
             Dim InsWaitJob As JobClass
             For Index As Integer = 0 To WaitJobList.Count - 1
                 InsWaitJob = WaitJobList(Index)
-                WaitJobPoint = New Point(WaitRectangle.Left, WaitRectangle.Top + Index * DispathCellHeight)
+                WaitJobPoint = New Point(WaitRectangle.Left, WaitRectangle.Top + Index * (DispathCellHeight + 2))
                 WaitJobSize = New Size(WaitRectangle.Width * InsWaitJob.TimeLength / Max_SystemTime, DispathCellHeight)
 
                 TempPen = New Pen(InsWaitJob.Color, 1)
@@ -300,7 +300,7 @@ Public Class MainForm
                 If (NextJobSubscript = Index) Then
                     NextJobTipLabel.Location = New Point(WaitJobPoint.X - NextJobTipLabel.Width, WaitJobPoint.Y)
                 End If
-
+                WaitJobPoint.Offset(2, 2)
                 Select Case DispathComboBox.SelectedIndex
                     Case 0
                         DispathGraphics.DrawString(InsWaitJob.Name & " / 到达顺序：" & Index, Me.Font, Brushes.White, WaitJobPoint)
@@ -431,12 +431,9 @@ Public Class MainForm
                 '最高响应比优先-HRN
                 ResponseRatios.Clear()
                 Dim Index As Integer
+                ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(0).StartTime + WaitJobList(0).TimeLength) / WaitJobList(0).TimeLength + 1, 2))
                 For Index = 1 To WaitJobList.Count - 1
-                    If (WaitJobList(Index).StartTime > WaitJobList(JobSubscript).StartTime) Then JobSubscript = Index
-                Next
-                ResponseRatios.Add((WaitJobList(JobSubscript).StartTime - WaitJobList(0).StartTime) / WaitJobList(0).TimeLength + 1)
-                For Index = 1 To WaitJobList.Count - 1
-                    ResponseRatios.Add((WaitJobList(JobSubscript).StartTime - WaitJobList(Index).StartTime) / WaitJobList(Index).TimeLength + 1)
+                    ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(Index).StartTime + WaitJobList(Index).TimeLength) / WaitJobList(Index).TimeLength + 1, 2))
                 Next
                 Return (ResponseRatios.IndexOf(ResponseRatios.Max))
             Case 3
@@ -545,5 +542,4 @@ Public Class MainForm
     End Sub
 
 #End Region
-
 End Class
