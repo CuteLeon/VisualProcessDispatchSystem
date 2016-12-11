@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "可视化作业调度系统", "可视化作业调度系统\可视化作业调度系统.vbproj", "{B873307E-E28F-47C5-9748-36A41A039CE3}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "操作系统调度算法可视化", "可视化作业调度系统\操作系统调度算法可视化.vbproj", "{B873307E-E28F-47C5-9748-36A41A039CE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -42,6 +42,7 @@ Partial Class MainForm
         Me.NextJobTipLabel = New System.Windows.Forms.Label()
         Me.DispathComboBox = New System.Windows.Forms.ComboBox()
         Me.SettingButton = New System.Windows.Forms.Label()
+        Me.RecordPanel = New System.Windows.Forms.Label()
         Me.SuspendLayout()
         '
         'CloseButton
@@ -91,9 +92,9 @@ Partial Class MainForm
         Me.LogoLabel.ForeColor = System.Drawing.Color.Yellow
         Me.LogoLabel.Location = New System.Drawing.Point(5, 5)
         Me.LogoLabel.Name = "LogoLabel"
-        Me.LogoLabel.Size = New System.Drawing.Size(154, 21)
+        Me.LogoLabel.Size = New System.Drawing.Size(186, 21)
         Me.LogoLabel.TabIndex = 5
-        Me.LogoLabel.Text = "可视化作业调度系统"
+        Me.LogoLabel.Text = "操作系统调度算法可视化"
         '
         'TimeLinePanel
         '
@@ -103,7 +104,7 @@ Partial Class MainForm
         Me.TimeLinePanel.ForeColor = System.Drawing.Color.Transparent
         Me.TimeLinePanel.Location = New System.Drawing.Point(30, 84)
         Me.TimeLinePanel.Name = "TimeLinePanel"
-        Me.TimeLinePanel.Size = New System.Drawing.Size(474, 135)
+        Me.TimeLinePanel.Size = New System.Drawing.Size(474, 111)
         Me.TimeLinePanel.TabIndex = 6
         Me.TimeLinePanel.Text = "时间线："
         Me.TimeLinePanel.TextAlign = System.Drawing.ContentAlignment.TopCenter
@@ -114,9 +115,9 @@ Partial Class MainForm
         Me.DispathPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.DispathPanel.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.DispathPanel.ForeColor = System.Drawing.Color.Transparent
-        Me.DispathPanel.Location = New System.Drawing.Point(30, 233)
+        Me.DispathPanel.Location = New System.Drawing.Point(30, 200)
         Me.DispathPanel.Name = "DispathPanel"
-        Me.DispathPanel.Size = New System.Drawing.Size(474, 135)
+        Me.DispathPanel.Size = New System.Drawing.Size(474, 122)
         Me.DispathPanel.TabIndex = 7
         Me.DispathPanel.Text = "调度区："
         Me.DispathPanel.TextAlign = System.Drawing.ContentAlignment.TopCenter
@@ -201,7 +202,7 @@ Partial Class MainForm
         '
         Me.TimeLineLabel.BackColor = System.Drawing.Color.Transparent
         Me.TimeLineLabel.Image = Global.可视化作业调度系统.My.Resources.UnityResource.TimeLine
-        Me.TimeLineLabel.Location = New System.Drawing.Point(201, 91)
+        Me.TimeLineLabel.Location = New System.Drawing.Point(194, 68)
         Me.TimeLineLabel.Name = "TimeLineLabel"
         Me.TimeLineLabel.Size = New System.Drawing.Size(29, 127)
         Me.TimeLineLabel.TabIndex = 14
@@ -213,7 +214,7 @@ Partial Class MainForm
         Me.WaitLabel.BackColor = System.Drawing.Color.Transparent
         Me.WaitLabel.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.WaitLabel.ForeColor = System.Drawing.Color.White
-        Me.WaitLabel.Location = New System.Drawing.Point(343, 289)
+        Me.WaitLabel.Location = New System.Drawing.Point(359, 248)
         Me.WaitLabel.Name = "WaitLabel"
         Me.WaitLabel.Size = New System.Drawing.Size(107, 20)
         Me.WaitLabel.TabIndex = 15
@@ -226,7 +227,7 @@ Partial Class MainForm
         Me.ExecuteLabel.BackColor = System.Drawing.Color.Transparent
         Me.ExecuteLabel.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.ExecuteLabel.ForeColor = System.Drawing.Color.White
-        Me.ExecuteLabel.Location = New System.Drawing.Point(371, 263)
+        Me.ExecuteLabel.Location = New System.Drawing.Point(387, 222)
         Me.ExecuteLabel.Name = "ExecuteLabel"
         Me.ExecuteLabel.Size = New System.Drawing.Size(79, 20)
         Me.ExecuteLabel.TabIndex = 16
@@ -244,7 +245,7 @@ Partial Class MainForm
         Me.LogLabel.Name = "LogLabel"
         Me.LogLabel.ReadOnly = True
         Me.LogLabel.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.LogLabel.Size = New System.Drawing.Size(277, 284)
+        Me.LogLabel.Size = New System.Drawing.Size(277, 238)
         Me.LogLabel.TabIndex = 17
         '
         'NextJobTipLabel
@@ -253,7 +254,7 @@ Partial Class MainForm
         Me.NextJobTipLabel.BackColor = System.Drawing.Color.Transparent
         Me.NextJobTipLabel.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.NextJobTipLabel.ForeColor = System.Drawing.Color.Red
-        Me.NextJobTipLabel.Location = New System.Drawing.Point(331, 315)
+        Me.NextJobTipLabel.Location = New System.Drawing.Point(347, 274)
         Me.NextJobTipLabel.Name = "NextJobTipLabel"
         Me.NextJobTipLabel.Size = New System.Drawing.Size(119, 20)
         Me.NextJobTipLabel.TabIndex = 18
@@ -286,6 +287,18 @@ Partial Class MainForm
         Me.SettingButton.TabIndex = 20
         Me.SettingButton.Tag = "Setting"
         '
+        'RecordPanel
+        '
+        Me.RecordPanel.BackColor = System.Drawing.Color.Transparent
+        Me.RecordPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.RecordPanel.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.RecordPanel.ForeColor = System.Drawing.Color.Transparent
+        Me.RecordPanel.Location = New System.Drawing.Point(30, 331)
+        Me.RecordPanel.Name = "RecordPanel"
+        Me.RecordPanel.Size = New System.Drawing.Size(759, 55)
+        Me.RecordPanel.TabIndex = 21
+        Me.RecordPanel.TextAlign = System.Drawing.ContentAlignment.TopCenter
+        '
         'MainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -293,7 +306,8 @@ Partial Class MainForm
         Me.BackColor = System.Drawing.Color.White
         Me.BackgroundImage = Global.可视化作业调度系统.My.Resources.UnityResource.BGI
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
-        Me.ClientSize = New System.Drawing.Size(799, 376)
+        Me.ClientSize = New System.Drawing.Size(799, 399)
+        Me.Controls.Add(Me.RecordPanel)
         Me.Controls.Add(Me.SettingButton)
         Me.Controls.Add(Me.DispathComboBox)
         Me.Controls.Add(Me.NextJobTipLabel)
@@ -316,7 +330,7 @@ Partial Class MainForm
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.Name = "MainForm"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "可视化作业调度系统"
+        Me.Text = "操作系统调度算法可视化"
         Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
         Me.ResumeLayout(False)
         Me.PerformLayout()
@@ -342,4 +356,5 @@ Partial Class MainForm
     Friend WithEvents NextJobTipLabel As Label
     Friend WithEvents DispathComboBox As ComboBox
     Friend WithEvents SettingButton As Label
+    Friend WithEvents RecordPanel As Label
 End Class

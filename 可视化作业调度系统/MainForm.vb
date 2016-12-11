@@ -41,13 +41,11 @@ Public Class MainForm
     Dim DispathCellWidth As Double
     Dim DispathCellHeight As Double
     Dim ResponseRatios As New List(Of Double)
-
     Private Structure ExecuteLog
         Dim JobName As String
         Dim ExecuteTime As Integer
         Dim TimeLength As Integer
         Dim Color As Color
-
         Public Sub New(jName As String, eTime As Integer, tLength As Integer, jColor As Color)
             JobName = jName
             ExecuteTime = eTime
@@ -56,7 +54,7 @@ Public Class MainForm
         End Sub
     End Structure
     '记录执行记录以生成结果流程图
-    Dim ExecuteLogs As List(Of ExecuteLog)
+    Dim ExecuteLogs As New List(Of ExecuteLog)
 
 #Region "窗体事件"
 
@@ -214,6 +212,7 @@ Public Class MainForm
     Private Sub CreateJobsList()
         AllJobList.Clear()
         WaitJobList.Clear()
+        ExecuteLogs.Clear()
         LogLabel.Text &= "开始重新生成作业队列..." & vbCrLf
         For Index As Integer = 0 To Max_JobCount - 1
             Dim JobStartTime As Integer = SystemRandom.Next(Max_SystemTime)
@@ -310,9 +309,11 @@ Public Class MainForm
         End If
 
         If Not (IsNothing(ExecuteJob)) Then
-            If Not ExecuteLabel.Visible Then ExecuteLabel.Show()
+            If Not ExecuteLabel.Visible Then
+                ExecuteLabel.Show()
+                ExecuteLabel.Text = "正在执行：" & ExecuteJob.Name
+            End If
             TempPen = New Pen(ExecuteJob.Color, 1)
-            ExecuteLabel.Text = "正在执行：" & ExecuteJob.Name
             ExecuteRectangle.Location = New Point(WaitRectangle.Left - WaitRectangle.Width * (SystemClock - ExecuteTime) / Max_SystemTime, ExecuteRectangle.Top)
 
             DispathGraphics.DrawLine(TempPen, ExecuteRectangle.Left, ExecuteRectangle.Top + ExecuteRectangle.Height, ExecuteRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ExecuteRectangle.Height + ShadowDistance)
