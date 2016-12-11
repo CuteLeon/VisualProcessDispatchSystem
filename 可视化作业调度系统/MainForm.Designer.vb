@@ -41,6 +41,7 @@ Partial Class MainForm
         Me.LogLabel = New System.Windows.Forms.TextBox()
         Me.NextJobTipLabel = New System.Windows.Forms.Label()
         Me.DispathComboBox = New System.Windows.Forms.ComboBox()
+        Me.SettingButton = New System.Windows.Forms.Label()
         Me.SuspendLayout()
         '
         'CloseButton
@@ -90,9 +91,9 @@ Partial Class MainForm
         Me.LogoLabel.ForeColor = System.Drawing.Color.Yellow
         Me.LogoLabel.Location = New System.Drawing.Point(5, 5)
         Me.LogoLabel.Name = "LogoLabel"
-        Me.LogoLabel.Size = New System.Drawing.Size(350, 21)
+        Me.LogoLabel.Size = New System.Drawing.Size(154, 21)
         Me.LogoLabel.TabIndex = 5
-        Me.LogoLabel.Text = "可视化作业调度系统 [BY：Leon.ID@QQ.COM]"
+        Me.LogoLabel.Text = "可视化作业调度系统"
         '
         'TimeLinePanel
         '
@@ -142,7 +143,7 @@ Partial Class MainForm
         Me.SystemClockTitle.BackColor = System.Drawing.Color.Transparent
         Me.SystemClockTitle.Font = New System.Drawing.Font("微软雅黑", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.SystemClockTitle.ForeColor = System.Drawing.Color.Aqua
-        Me.SystemClockTitle.Location = New System.Drawing.Point(618, 57)
+        Me.SystemClockTitle.Location = New System.Drawing.Point(634, 57)
         Me.SystemClockTitle.Name = "SystemClockTitle"
         Me.SystemClockTitle.Size = New System.Drawing.Size(90, 21)
         Me.SystemClockTitle.TabIndex = 9
@@ -273,6 +274,18 @@ Partial Class MainForm
         Me.DispathComboBox.Size = New System.Drawing.Size(145, 28)
         Me.DispathComboBox.TabIndex = 19
         '
+        'SettingButton
+        '
+        Me.SettingButton.BackColor = System.Drawing.Color.Transparent
+        Me.SettingButton.Font = New System.Drawing.Font("微软雅黑", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.SettingButton.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.SettingButton.Image = Global.可视化作业调度系统.My.Resources.UnityResource.Setting_0
+        Me.SettingButton.Location = New System.Drawing.Point(695, 0)
+        Me.SettingButton.Name = "SettingButton"
+        Me.SettingButton.Size = New System.Drawing.Size(32, 21)
+        Me.SettingButton.TabIndex = 20
+        Me.SettingButton.Tag = "Setting"
+        '
         'MainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -281,6 +294,7 @@ Partial Class MainForm
         Me.BackgroundImage = Global.可视化作业调度系统.My.Resources.UnityResource.BGI
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.ClientSize = New System.Drawing.Size(799, 376)
+        Me.Controls.Add(Me.SettingButton)
         Me.Controls.Add(Me.DispathComboBox)
         Me.Controls.Add(Me.NextJobTipLabel)
         Me.Controls.Add(Me.LogLabel)
@@ -327,4 +341,5 @@ Partial Class MainForm
     Friend WithEvents LogLabel As TextBox
     Friend WithEvents NextJobTipLabel As Label
     Friend WithEvents DispathComboBox As ComboBox
+    Friend WithEvents SettingButton As Label
 End Class

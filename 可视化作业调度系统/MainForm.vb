@@ -40,6 +40,7 @@ Public Class MainForm
     Dim TimeCellHeight As Double
     Dim DispathCellWidth As Double
     Dim DispathCellHeight As Double
+    Dim ResponseRatios As New List(Of Double)
 
     Private Structure ExecuteLog
         Dim JobName As String
@@ -67,6 +68,7 @@ Public Class MainForm
         Me.Icon = My.Resources.UnityResource.SystemICON
         CloseButton.Left = Me.Width - CloseButton.Width
         MinButton.Left = CloseButton.Left - MinButton.Width
+        SettingButton.Left = MinButton.Left - SettingButton.Width
 
         Dim LastRightPoint As Integer = 15
         '设置纯色按钮的初始颜色
@@ -137,23 +139,27 @@ Public Class MainForm
         If MsgBox("就这样退出吗？真的不爱了？", MsgBoxStyle.OkCancel Or MsgBoxStyle.Question, "确定不留下么？") = MsgBoxResult.Ok Then Me.Tag = True : Application.Exit()
     End Sub
 
+    Private Sub SettingButton_Click(sender As Object, e As EventArgs) Handles SettingButton.Click
+        If Not AboutMe.Visible Then AboutMe.ShowDialog(Me)
+    End Sub
+
 #End Region
 
 #Region "图像按钮动态效果"
 
-    Private Sub ControlButton_MouseDown(sender As Label, e As MouseEventArgs) Handles MinButton.MouseDown, CloseButton.MouseDown
+    Private Sub ControlButton_MouseDown(sender As Label, e As MouseEventArgs) Handles MinButton.MouseDown, CloseButton.MouseDown, SettingButton.MouseDown
         sender.Image = My.Resources.UnityResource.ResourceManager.GetObject(sender.Tag & "_2")
     End Sub
 
-    Private Sub ControlButton_MouseEnter(sender As Label, e As EventArgs) Handles MinButton.MouseEnter, CloseButton.MouseEnter
+    Private Sub ControlButton_MouseEnter(sender As Label, e As EventArgs) Handles MinButton.MouseEnter, CloseButton.MouseEnter, SettingButton.MouseEnter
         sender.Image = My.Resources.UnityResource.ResourceManager.GetObject(sender.Tag & "_1")
     End Sub
 
-    Private Sub ControlButton_MouseLeave(sender As Label, e As EventArgs) Handles MinButton.MouseLeave, CloseButton.MouseLeave
+    Private Sub ControlButton_MouseLeave(sender As Label, e As EventArgs) Handles MinButton.MouseLeave, CloseButton.MouseLeave, SettingButton.MouseLeave
         sender.Image = My.Resources.UnityResource.ResourceManager.GetObject(sender.Tag & "_0")
     End Sub
 
-    Private Sub ControlButton_MouseUp(sender As Label, e As MouseEventArgs) Handles MinButton.MouseUp, CloseButton.MouseUp
+    Private Sub ControlButton_MouseUp(sender As Label, e As MouseEventArgs) Handles MinButton.MouseUp, CloseButton.MouseUp, SettingButton.MouseUp
         sender.Image = My.Resources.UnityResource.ResourceManager.GetObject(sender.Tag & "_1")
     End Sub
 
@@ -254,7 +260,6 @@ Public Class MainForm
         Dim WaitJobPoint As Point
         Dim WaitJobSize As Size
         Dim TempPen As Pen
-
         'DispathGraphics.FillRectangle(Brushes.Goldenrod, ExecuteRectangle)
         'DispathGraphics.DrawRectangle(Pens.Red, ExecuteRectangle)
         'DispathGraphics.FillRectangle(Brushes.AliceBlue, WaitRectangle)
@@ -266,11 +271,13 @@ Public Class MainForm
         If WaitJobList.Count > 0 Then
             If Not WaitLabel.Visible Then WaitLabel.Show()
             If Not NextJobTipLabel.Visible Then NextJobTipLabel.Show()
+            Dim InsWaitJob As JobClass
             For Index As Integer = 0 To WaitJobList.Count - 1
+                InsWaitJob = WaitJobList(Index)
                 WaitJobPoint = New Point(WaitRectangle.Left, WaitRectangle.Top + Index * DispathCellHeight)
-                WaitJobSize = New Size(WaitRectangle.Width * WaitJobList(Index).TimeLength / Max_SystemTime, DispathCellHeight)
+                WaitJobSize = New Size(WaitRectangle.Width * InsWaitJob.TimeLength / Max_SystemTime, DispathCellHeight)
 
-                TempPen = New Pen(WaitJobList(Index).Color, 1)
+                TempPen = New Pen(InsWaitJob.Color, 1)
                 DispathGraphics.DrawLine(TempPen, WaitJobPoint.X, WaitJobPoint.Y + WaitJobSize.Height, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
                 DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width, WaitJobPoint.Y, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + ShadowDistance)
                 DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width, WaitJobPoint.Y + WaitJobSize.Height, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
@@ -280,10 +287,22 @@ Public Class MainForm
                 DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + ShadowDistance, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
                 DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
 
-                DispathGraphics.FillRectangle(New SolidBrush(WaitJobList(Index).Color), New Rectangle(WaitJobPoint, WaitJobSize))
+                DispathGraphics.FillRectangle(New SolidBrush(InsWaitJob.Color), New Rectangle(WaitJobPoint, WaitJobSize))
                 If (NextJobSubscript = Index) Then
                     NextJobTipLabel.Location = New Point(WaitJobPoint.X - NextJobTipLabel.Width, WaitJobPoint.Y)
                 End If
+
+                Select Case DispathComboBox.SelectedIndex
+                    Case 0
+                        DispathGraphics.DrawString(InsWaitJob.Name & " / 到达顺序：" & Index, Me.Font, Brushes.White, WaitJobPoint)
+                    Case 1
+                        DispathGraphics.DrawString(InsWaitJob.Name & " / 作业长度：" & InsWaitJob.TimeLength, Me.Font, Brushes.White, WaitJobPoint)
+                    Case 2
+                        If ResponseRatios.Count > 0 Then DispathGraphics.DrawString(InsWaitJob.Name & " / 响应比：" & ResponseRatios(Index), Me.Font, Brushes.White, WaitJobPoint)
+                    Case 3
+                    Case 4
+                    Case 5
+                End Select
             Next
         Else
             If WaitLabel.Visible Then WaitLabel.Hide()
@@ -380,7 +399,6 @@ Public Class MainForm
     ''' <summary>
     ''' 返回等待队列里下次要执行的作业下标
     ''' </summary>
-    ''' <returns></returns>
     Private Function GetNextJobSubscript() As Integer
         Dim JobSubscript As Integer = 0
         Select Case DispathComboBox.SelectedIndex
@@ -390,14 +408,22 @@ Public Class MainForm
             Case 1
                 '短作业优先-SJF
                 For Index As Integer = 1 To WaitJobList.Count - 1
-                    If (WaitJobList(Index).TimeLength < WaitJobList(JobSubscript).TimeLength) Then
-                        JobSubscript = Index
-                    End If
+                    If (WaitJobList(Index).TimeLength < WaitJobList(JobSubscript).TimeLength) Then JobSubscript = Index
                 Next
                 LogLabel.Text &= String.Format("系统时间：{0}  ||  找到最短作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
                 Return JobSubscript
             Case 2
                 '最高响应比优先-HRN
+                ResponseRatios.Clear()
+                Dim Index As Integer
+                For Index = 1 To WaitJobList.Count - 1
+                    If (WaitJobList(Index).StartTime > WaitJobList(JobSubscript).StartTime) Then JobSubscript = Index
+                Next
+                ResponseRatios.Add((WaitJobList(JobSubscript).StartTime - WaitJobList(0).StartTime) / WaitJobList(0).TimeLength + 1)
+                For Index = 1 To WaitJobList.Count - 1
+                    ResponseRatios.Add((WaitJobList(JobSubscript).StartTime - WaitJobList(Index).StartTime) / WaitJobList(Index).TimeLength + 1)
+                Next
+                Return (ResponseRatios.IndexOf(ResponseRatios.Max))
             Case 3
                 '优先数调度-HPF
             Case 4
