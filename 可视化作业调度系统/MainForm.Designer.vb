@@ -43,6 +43,7 @@ Partial Class MainForm
         Me.DispathComboBox = New System.Windows.Forms.ComboBox()
         Me.SettingButton = New System.Windows.Forms.Label()
         Me.RecordPanel = New System.Windows.Forms.Label()
+        Me.ReplayCheckBox = New System.Windows.Forms.CheckBox()
         Me.SuspendLayout()
         '
         'CloseButton
@@ -299,6 +300,19 @@ Partial Class MainForm
         Me.RecordPanel.TabIndex = 21
         Me.RecordPanel.TextAlign = System.Drawing.ContentAlignment.TopCenter
         '
+        'ReplayCheckBox
+        '
+        Me.ReplayCheckBox.AutoSize = True
+        Me.ReplayCheckBox.BackColor = System.Drawing.Color.Transparent
+        Me.ReplayCheckBox.Font = New System.Drawing.Font("微软雅黑", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.ReplayCheckBox.ForeColor = System.Drawing.Color.White
+        Me.ReplayCheckBox.Location = New System.Drawing.Point(375, 0)
+        Me.ReplayCheckBox.Name = "ReplayCheckBox"
+        Me.ReplayCheckBox.Size = New System.Drawing.Size(189, 25)
+        Me.ReplayCheckBox.TabIndex = 22
+        Me.ReplayCheckBox.Text = "完成后自动重置并播放"
+        Me.ReplayCheckBox.UseVisualStyleBackColor = False
+        '
         'MainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -307,6 +321,7 @@ Partial Class MainForm
         Me.BackgroundImage = Global.可视化作业调度系统.My.Resources.UnityResource.BGI
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.ClientSize = New System.Drawing.Size(799, 399)
+        Me.Controls.Add(Me.ReplayCheckBox)
         Me.Controls.Add(Me.RecordPanel)
         Me.Controls.Add(Me.SettingButton)
         Me.Controls.Add(Me.DispathComboBox)
@@ -357,4 +372,5 @@ Partial Class MainForm
     Friend WithEvents DispathComboBox As ComboBox
     Friend WithEvents SettingButton As Label
     Friend WithEvents RecordPanel As Label
+    Friend WithEvents ReplayCheckBox As CheckBox
 End Class

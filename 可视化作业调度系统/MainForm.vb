@@ -71,6 +71,7 @@ Public Class MainForm
         CloseButton.Left = Me.Width - CloseButton.Width
         MinButton.Left = CloseButton.Left - MinButton.Width
         SettingButton.Left = MinButton.Left - SettingButton.Width
+        ReplayCheckBox.Left = SettingButton.Left - ReplayCheckBox.Width - 10
 
         Dim LastRightPoint As Integer = 15
         '设置纯色按钮的初始颜色
@@ -399,13 +400,19 @@ Public Class MainForm
                     ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
                 Else
                     If AllJobList.Count = 0 Then
-                        LogLabel.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
-                        SystemClockTimer.Stop()
-                        PlayPauseButton.Text = "播放   "
-                        PlayPauseButton.Image = My.Resources.UnityResource.Play
-                        MsgBox("年轻的樵夫呦！-貌似队列里所有的作业都已经执行完毕了呢！-快来重置生成新的作业队列吧！".Replace("-", vbCrLf), MsgBoxStyle.Information, "Leon：)")
+                        If ReplayCheckBox.Checked Then
+                            CreateJobListButton_Click(Nothing, New EventArgs)
+                            ExecuteFunction()
+                            SystemClockTimer.Start()
+                        Else
+                            LogLabel.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
+                            SystemClockTimer.Stop()
+                            PlayPauseButton.Text = "播放   "
+                            PlayPauseButton.Image = My.Resources.UnityResource.Play
+                            MsgBox("年轻的樵夫呦！-貌似队列里所有的作业都已经执行完毕了呢！-快来重置生成新的作业队列吧！".Replace("-", vbCrLf), MsgBoxStyle.Information, "Leon：)")
+                            ExecuteJob = Nothing
+                        End If
                     End If
-                    ExecuteJob = Nothing
                 End If
             End If
         End If
