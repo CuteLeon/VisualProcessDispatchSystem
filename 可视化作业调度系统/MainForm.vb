@@ -97,10 +97,10 @@ Public Class MainForm
         TimeCellWidth = CoordinateRectangle.Width / Max_SystemTime
         TimeCellHeight = CoordinateRectangle.Height / Max_JobCount
         DispathRectangle = New Rectangle(15, 25, DispathPanel.Width - 30, DispathPanel.Height - 45)
-        DispathCellHeight = (DispathRectangle.Height + ExecuteRectangle.Top - DispathRectangle.Top - WaitLabel.Height - 10) / Max_JobCount
+        DispathCellHeight = (DispathRectangle.Height + ExecuteRectangle.Top - DispathRectangle.Top - WaitLabel.Height - 10) / (Max_JobCount + 1)
         ExecuteRectangle = New Rectangle(15, 50, DispathRectangle.Width, DispathCellHeight)
         WaitRectangle.Location = New Point(ExecuteRectangle.Left + ExecuteRectangle.Width * 0.3, ExecuteRectangle.Bottom + WaitLabel.Height + 10)
-        WaitRectangle.Size = New Size(ExecuteRectangle.Right - WaitRectangle.Left, DispathCellHeight * (Max_JobCount - 1))
+        WaitRectangle.Size = New Size(ExecuteRectangle.Right - WaitRectangle.Left, DispathCellHeight * Max_JobCount)
         DispathCellWidth = WaitRectangle.Width / Max_SystemTime
 
         TimeLineLabel.Parent = TimeLinePanel
@@ -254,10 +254,12 @@ Public Class MainForm
         Dim WaitJobPoint As Point
         Dim WaitJobSize As Size
         Dim TempPen As Pen
+
         'DispathGraphics.FillRectangle(Brushes.Goldenrod, ExecuteRectangle)
         'DispathGraphics.DrawRectangle(Pens.Red, ExecuteRectangle)
         'DispathGraphics.FillRectangle(Brushes.AliceBlue, WaitRectangle)
         'DispathGraphics.DrawRectangle(Pens.Red, WaitRectangle)
+
         DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance, WaitRectangle.Left + ShadowDistance, WaitRectangle.Bottom + ShadowDistance)
         DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance)
 
@@ -325,15 +327,10 @@ Public Class MainForm
         Do While Index < ListCount
             If AllJobList(Index).StartTime = SystemClock Then
                 JIDs &= AllJobList(Index).ID & " 和 "
-                If IsNothing(ExecuteJob) Then
-                    ExecuteTime = SystemClock
-                    ExecuteJob = AllJobList(Index)
-                    ExecuteRectangle.Size = New Size(WaitRectangle.Width * ExecuteJob.TimeLength / Max_SystemTime, ExecuteRectangle.Height)
-                    NextJobSubscript = -1
-                Else
-                    WaitJobList.Add(AllJobList(Index))
-                    NextJobSubscript = GetNextJobSubscript()
-                End If
+
+                WaitJobList.Add(AllJobList(Index))
+                NextJobSubscript = GetNextJobSubscript()
+
                 AllJobList.RemoveAt(Index)
                 ListCount -= 1
             Else
@@ -349,24 +346,33 @@ Public Class MainForm
     ''' 检查作业执行结束
     ''' </summary>
     Private Sub CheckJobCompelet()
-        If (IsNothing(ExecuteJob)) Then Exit Sub
-        If SystemClock = ExecuteTime + ExecuteJob.TimeLength Then
+        If (IsNothing(ExecuteJob)) Then
             If WaitJobList.Count > 0 Then
-                LogLabel.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
                 ExecuteJob = WaitJobList(NextJobSubscript)
                 WaitJobList.RemoveAt(NextJobSubscript)
                 If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
                 ExecuteTime = SystemClock
                 ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
-            Else
-                If AllJobList.Count = 0 Then
-                    LogLabel.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
-                    SystemClockTimer.Stop()
-                    PlayPauseButton.Text = "播放   "
-                    PlayPauseButton.Image = My.Resources.UnityResource.Play
-                    MsgBox("年轻的樵夫呦！-貌似队列里所有的作业都已经执行完毕了呢！-快来重置生成新的作业队列吧！".Replace("-", vbCrLf), MsgBoxStyle.Information, "Leon：)")
+            End If
+        Else
+            If SystemClock = ExecuteTime + ExecuteJob.TimeLength Then
+                If WaitJobList.Count > 0 Then
+                    LogLabel.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
+                    ExecuteJob = WaitJobList(NextJobSubscript)
+                    WaitJobList.RemoveAt(NextJobSubscript)
+                    If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
+                    ExecuteTime = SystemClock
+                    ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
+                Else
+                    If AllJobList.Count = 0 Then
+                        LogLabel.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
+                        SystemClockTimer.Stop()
+                        PlayPauseButton.Text = "播放   "
+                        PlayPauseButton.Image = My.Resources.UnityResource.Play
+                        MsgBox("年轻的樵夫呦！-貌似队列里所有的作业都已经执行完毕了呢！-快来重置生成新的作业队列吧！".Replace("-", vbCrLf), MsgBoxStyle.Information, "Leon：)")
+                    End If
+                    ExecuteJob = Nothing
                 End If
-                ExecuteJob = Nothing
             End If
         End If
     End Sub
