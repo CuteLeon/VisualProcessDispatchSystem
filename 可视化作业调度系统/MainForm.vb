@@ -581,7 +581,6 @@ Public Class MainForm
     End Sub
 
     Private Sub LabelTextBox_Resize(sender As Object, e As EventArgs) Handles LabelTextBox.Resize
-        SystemClockTitle.Text = My.Computer.Clock.TickCount
         If LabelTextBox.Height > LogLabel.Height Then
             LabelScrollBar.Top = LogLabel.Height - LabelScrollBar.Height
             LabelTextBox.Top = LogLabel.Height - LabelTextBox.Height
