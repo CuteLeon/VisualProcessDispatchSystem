@@ -277,6 +277,7 @@ Public Class MainForm
     ''' 绘制调度区图像
     ''' </summary>
     Private Function CreateDispathImage() As Image
+        On Error Resume Next
         Dim DispathImage As Bitmap = New Bitmap(DispathPanel.Width, DispathPanel.Height)
         Dim DispathGraphics As Graphics = Graphics.FromImage(DispathImage)
         Dim WaitJobPoint As Point
@@ -320,7 +321,7 @@ Public Class MainForm
                     Case 1
                         DispathGraphics.DrawString(InsWaitJob.Name & " / 作业长度：" & InsWaitJob.TimeLength, Me.Font, Brushes.White, WaitJobPoint)
                     Case 2
-                        If ResponseRatios.Count > 0 Then DispathGraphics.DrawString(InsWaitJob.Name & " / 响应比：" & ResponseRatios(Index), Me.Font, Brushes.White, WaitJobPoint)
+                        If ResponseRatios.Count > Index Then DispathGraphics.DrawString(InsWaitJob.Name & " / 响应比：" & ResponseRatios(Index), Me.Font, Brushes.White, WaitJobPoint)
                     Case 3
                     Case 4
                     Case 5
@@ -491,6 +492,7 @@ Public Class MainForm
     ''' 绘制值守
     ''' </summary>
     Private Function CreateRecordImage() As Bitmap
+        On Error Resume Next
         Dim RecordImage As Bitmap = New Bitmap(RecordPanel.Width, RecordPanel.Height)
         Dim RecordGraphics As Graphics = Graphics.FromImage(RecordImage)
         Dim InsExecuteLog As ExecuteLog
