@@ -45,12 +45,14 @@ Public Class MainForm
     Dim ResponseRatios As New List(Of Double)
 
     Private Structure ExecuteLog
-        Dim JobName As String
+        Dim ID As Integer
+        Dim Name As String
         Dim ExecuteTime As Integer
         Dim CompleteTime As Integer
         Dim Color As Color
-        Public Sub New(jName As String, eTime As Integer, tLength As Integer, jColor As Color)
-            JobName = jName
+        Public Sub New(jID As Integer, jName As String, eTime As Integer, tLength As Integer, jColor As Color)
+            ID = jID
+            Name = jName
             ExecuteTime = eTime
             CompleteTime = eTime + tLength
             Color = jColor
@@ -376,7 +378,7 @@ Public Class MainForm
         If (IsNothing(ExecuteJob)) Then
             If WaitJobList.Count > 0 Then
                 ExecuteJob = WaitJobList(NextJobSubscript)
-                Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
+                Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
                 ExecuteLogs.Add(ExecuteLog)
                 LogLabel.Text &= String.Format("系统时间：{0}  ||  开始执行 {1}！", SystemClock, ExecuteJob.Name) & vbCrLf
                 WaitJobList.RemoveAt(NextJobSubscript)
@@ -389,7 +391,7 @@ Public Class MainForm
                 If WaitJobList.Count > 0 Then
                     LogLabel.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
                     ExecuteJob = WaitJobList(NextJobSubscript)
-                    Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
+                    Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
                     ExecuteLogs.Add(ExecuteLog)
                     WaitJobList.RemoveAt(NextJobSubscript)
                     If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
@@ -461,7 +463,6 @@ Public Class MainForm
     ''' 绘制值守
     ''' </summary>
     Private Function CreateRecordImage() As Bitmap
-        LogoLabel.Text = My.Computer.Clock.TickCount
         Dim RecordImage As Bitmap = New Bitmap(RecordPanel.Width, RecordPanel.Height)
         Dim RecordGraphics As Graphics = Graphics.FromImage(RecordImage)
         Dim InsExecuteLog As ExecuteLog
@@ -469,11 +470,12 @@ Public Class MainForm
         'RecordGraphics.FillRectangle(Brushes.Red, New Rectangle(0, 0, RecordCellWidth, RecordCellHeight))
         For Index As Integer = 0 To ExecuteLogs.Count - 1
             InsExecuteLog = ExecuteLogs(Index)
-            WaitLabel.Text = InsExecuteLog.JobName
-            'Debug.Print(CInt(InsExecuteLog.CompleteTime * RecordCellWidth) & " - " & CInt(Index * RecordCellHeight + 5))
+            RecordGraphics.DrawLine(New Pen(Color.FromArgb(50, Color.White), 1), CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), 0, CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), RecordPanel.Height)
             RecordGraphics.DrawLine(New Pen(InsExecuteLog.Color, 2),
-                CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(Index * RecordCellHeight + 5),
-                CInt(InsExecuteLog.CompleteTime * RecordCellWidth), CInt(Index * RecordCellHeight + 5))
+                CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4),
+                CInt(InsExecuteLog.CompleteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4))
+            RecordGraphics.DrawString(InsExecuteLog.Name, Me.Font, New SolidBrush(InsExecuteLog.Color), CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight - 10))
+            RecordGraphics.DrawString(InsExecuteLog.ExecuteTime, Me.Font, Brushes.White, CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), RecordPanel.Height - 13)
         Next
         Return RecordImage
     End Function
