@@ -94,13 +94,13 @@ Public Class MainForm
 
         '调整容器控件的位置和尺寸
         TimeLinePanel.Location = New Point(15, CreateJobListButton.Bottom + 15)
-        TimeLinePanel.Size = New Size((Me.Width - 45) * 0.7, (Me.Height - TimeLinePanel.Top - 15) * 0.2)
-        DispathPanel.Location = New Point(15, TimeLinePanel.Bottom + 15)
-        DispathPanel.Size = New Size(TimeLinePanel.Width, (Me.Height - TimeLinePanel.Top - 15) * 0.6)
-        RecordPanel.Location = New Point(TimeLinePanel.Left, DispathPanel.Bottom + 15)
-        RecordPanel.Size = New Size(TimeLinePanel.Width, Me.Height - DispathPanel.Bottom - 30)
-        LogLabel.Location = New Point(TimeLinePanel.Right + 15, TimeLinePanel.Top)
-        LogLabel.Size = New Size((Me.Width - 45) * 0.3, RecordPanel.Bottom - TimeLinePanel.Top)
+        TimeLinePanel.Size = New Size((Me.Width - 40) * 0.7, (Me.Height - TimeLinePanel.Top - 15) * 0.2)
+        DispathPanel.Location = New Point(15, TimeLinePanel.Bottom + 10)
+        DispathPanel.Size = New Size(TimeLinePanel.Width, (Me.Height - TimeLinePanel.Top - 10) * 0.6)
+        RecordPanel.Location = New Point(TimeLinePanel.Left, DispathPanel.Bottom + 10)
+        RecordPanel.Size = New Size(TimeLinePanel.Width, Me.Height - DispathPanel.Bottom - 25)
+        LogLabel.Location = New Point(TimeLinePanel.Right + 10, TimeLinePanel.Top)
+        LogLabel.Size = New Size((Me.Width - 40) * 0.3, RecordPanel.Bottom - TimeLinePanel.Top)
 
         CoordinateRectangle = New Rectangle(15, 25, TimeLinePanel.Width - 30, TimeLinePanel.Height - 45)
         TimeCellWidth = CoordinateRectangle.Width / Max_SystemTime
