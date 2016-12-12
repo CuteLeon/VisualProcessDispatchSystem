@@ -43,9 +43,7 @@ Partial Class MainForm
         Me.SettingButton = New System.Windows.Forms.Label()
         Me.RecordPanel = New System.Windows.Forms.Label()
         Me.ReplayCheckBox = New System.Windows.Forms.CheckBox()
-        Me.LogLabel = New System.Windows.Forms.Label()
-        Me.LabelScrollBar = New System.Windows.Forms.Label()
-        Me.LabelTextBox = New System.Windows.Forms.Label()
+        Me.LogLabel = New 可视化作业调度系统.LeonTextBox()
         Me.SuspendLayout()
         '
         'CloseButton
@@ -303,35 +301,12 @@ Partial Class MainForm
         '
         'LogLabel
         '
-        Me.LogLabel.BackColor = System.Drawing.Color.Transparent
+        Me.LogLabel.BackColor = System.Drawing.Color.FromArgb(CType(CType(50, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.LogLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.LogLabel.Location = New System.Drawing.Point(510, 84)
         Me.LogLabel.Name = "LogLabel"
-        Me.LogLabel.Size = New System.Drawing.Size(275, 302)
+        Me.LogLabel.Size = New System.Drawing.Size(277, 303)
         Me.LogLabel.TabIndex = 23
-        '
-        'LabelScrollBar
-        '
-        Me.LabelScrollBar.BackColor = System.Drawing.Color.Transparent
-        Me.LabelScrollBar.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
-        Me.LabelScrollBar.ForeColor = System.Drawing.Color.White
-        Me.LabelScrollBar.Image = Global.可视化作业调度系统.My.Resources.UnityResource.ScrollBar
-        Me.LabelScrollBar.Location = New System.Drawing.Point(752, 85)
-        Me.LabelScrollBar.Name = "LabelScrollBar"
-        Me.LabelScrollBar.Size = New System.Drawing.Size(20, 45)
-        Me.LabelScrollBar.TabIndex = 24
-        Me.LabelScrollBar.Visible = False
-        '
-        'LabelTextBox
-        '
-        Me.LabelTextBox.AutoSize = True
-        Me.LabelTextBox.BackColor = System.Drawing.Color.Transparent
-        Me.LabelTextBox.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
-        Me.LabelTextBox.ForeColor = System.Drawing.Color.Aqua
-        Me.LabelTextBox.Location = New System.Drawing.Point(609, 142)
-        Me.LabelTextBox.Name = "LabelTextBox"
-        Me.LabelTextBox.Size = New System.Drawing.Size(0, 20)
-        Me.LabelTextBox.TabIndex = 25
         '
         'MainForm
         '
@@ -341,8 +316,6 @@ Partial Class MainForm
         Me.BackgroundImage = Global.可视化作业调度系统.My.Resources.UnityResource.BGI
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.ClientSize = New System.Drawing.Size(799, 399)
-        Me.Controls.Add(Me.LabelTextBox)
-        Me.Controls.Add(Me.LabelScrollBar)
         Me.Controls.Add(Me.LogLabel)
         Me.Controls.Add(Me.ReplayCheckBox)
         Me.Controls.Add(Me.RecordPanel)
@@ -394,7 +367,5 @@ Partial Class MainForm
     Friend WithEvents SettingButton As Label
     Friend WithEvents RecordPanel As Label
     Friend WithEvents ReplayCheckBox As CheckBox
-    Friend WithEvents LogLabel As Label
-    Friend WithEvents LabelScrollBar As Label
-    Friend WithEvents LabelTextBox As Label
+    Friend WithEvents LogLabel As LeonTextBox
 End Class

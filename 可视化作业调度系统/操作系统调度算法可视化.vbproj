@@ -82,6 +82,12 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="JobClass.vb" />
+    <Compile Include="LeonTextBox.designer.vb">
+      <DependentUpon>LeonTextBox.vb</DependentUpon>
+    </Compile>
+    <Compile Include="LeonTextBox.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="MainForm.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -113,6 +119,9 @@
   <ItemGroup>
     <EmbeddedResource Include="AboutMe.resx">
       <DependentUpon>AboutMe.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LeonTextBox.resx">
+      <DependentUpon>LeonTextBox.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.vb</DependentUpon>
@@ -194,9 +203,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutMe.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ScrollBar.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
