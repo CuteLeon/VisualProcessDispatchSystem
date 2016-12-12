@@ -139,6 +139,11 @@ Public Class MainForm
         DispathComboBox.SelectedIndex = 1
         SystemClockLabel.Left = LogLabel.Right - SystemClockLabel.Width
         SystemClockTitle.Left = SystemClockLabel.Left - SystemClockTitle.Width
+
+        'TODO:别忘了删了我
+        For index As Integer = 0 To 50
+            LabelTextBox.Text &= index & " - " & Space(10).Replace(" ", "M") & vbCrLf
+        Next
     End Sub
 
     Private Sub MainForm_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
@@ -584,8 +589,8 @@ Public Class MainForm
 
     Private Sub LabelTextBox_Resize(sender As Object, e As EventArgs) Handles LabelTextBox.Resize
         If LabelTextBox.Height > LogLabel.Height Then
-            LabelScrollBar.Top = LogLabel.Height - LabelScrollBar.Height
-            LabelTextBox.Top = LogLabel.Height - LabelTextBox.Height
+            'LabelScrollBar.Top = LogLabel.Height - LabelScrollBar.Height
+            'LabelTextBox.Top = LogLabel.Height - LabelTextBox.Height
             LabelScrollBar.Show()
         Else
             If LabelScrollBar.Visible Then
@@ -593,6 +598,25 @@ Public Class MainForm
                 LabelScrollBar.Hide()
             End If
         End If
+    End Sub
+
+    Private Sub LabelTextBox_MouseDown(sender As Object, e As MouseEventArgs) Handles LabelTextBox.MouseDown, LogLabel.MouseDown
+        LogLabel.Tag = MousePosition.Y : LabelTextBox.Tag = LabelTextBox.Top
+        AddHandler LabelTextBox.MouseMove, AddressOf LabelTextBox_MouseMove
+        AddHandler LogLabel.MouseMove, AddressOf LabelTextBox_MouseMove
+    End Sub
+
+    Private Sub LabelTextBox_MouseMove(sender As Object, e As MouseEventArgs)
+        If LabelTextBox.Height <= LogLabel.Height Then Exit Sub
+        Dim TopPosition As Integer = MousePosition.Y - LogLabel.Tag
+        If TopPosition > -LabelTextBox.Tag Or LabelTextBox.Tag + TopPosition < LogLabel.Height - LabelTextBox.Height Then Exit Sub
+        LabelTextBox.Top = LabelTextBox.Tag + TopPosition
+        LabelScrollBar.Top = -LabelTextBox.Top * (LogLabel.Height - LabelScrollBar.Height) / (LabelTextBox.Height - LogLabel.Height)
+    End Sub
+
+    Private Sub LabelTextBox_MouseUp(sender As Object, e As MouseEventArgs) Handles LabelTextBox.MouseUp, LogLabel.MouseUp
+        RemoveHandler LabelTextBox.MouseMove, AddressOf LabelTextBox_MouseMove
+        RemoveHandler LogLabel.MouseMove, AddressOf LabelTextBox_MouseMove
     End Sub
 
 #End Region
