@@ -1,11 +1,5 @@
 ﻿Imports System.ComponentModel
 
-'两个label嵌套
-'容器label设置panel背景色  内容label全透明
-'右侧滚动条
-'内置label 自动调整大小 大小改变时1.计算 滚动条的位置 和 滚动条滚动单位距离是内容label上下滚动的距离2.自动定位到底部
-'内容label 的top 和 bottom不允许出现  滚动条的top bottom 不予必须隐藏
-
 Public Class MainForm
     Private Const Max_JobCount As Integer = 12 '必须与 JobColors 个数匹配
     Private Const ButtonAlphaDefault As Integer = 50
@@ -139,11 +133,6 @@ Public Class MainForm
         DispathComboBox.SelectedIndex = 1
         SystemClockLabel.Left = LogLabel.Right - SystemClockLabel.Width
         SystemClockTitle.Left = SystemClockLabel.Left - SystemClockTitle.Width
-
-        'TODO:别忘了删了我
-        For index As Integer = 0 To 50
-            LabelTextBox.Text &= index & " - " & Space(10).Replace(" ", "M") & vbCrLf
-        Next
     End Sub
 
     Private Sub MainForm_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
@@ -589,8 +578,8 @@ Public Class MainForm
 
     Private Sub LabelTextBox_Resize(sender As Object, e As EventArgs) Handles LabelTextBox.Resize
         If LabelTextBox.Height > LogLabel.Height Then
-            'LabelScrollBar.Top = LogLabel.Height - LabelScrollBar.Height
-            'LabelTextBox.Top = LogLabel.Height - LabelTextBox.Height
+            LabelScrollBar.Top = LogLabel.Height - LabelScrollBar.Height
+            LabelTextBox.Top = LogLabel.Height - LabelTextBox.Height
             LabelScrollBar.Show()
         Else
             If LabelScrollBar.Visible Then
