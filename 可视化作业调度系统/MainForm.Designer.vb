@@ -205,7 +205,7 @@ Partial Class MainForm
         '
         Me.TimeLineLabel.BackColor = System.Drawing.Color.Transparent
         Me.TimeLineLabel.Image = Global.可视化作业调度系统.My.Resources.UnityResource.TimeLine
-        Me.TimeLineLabel.Location = New System.Drawing.Point(194, 68)
+        Me.TimeLineLabel.Location = New System.Drawing.Point(194, 76)
         Me.TimeLineLabel.Name = "TimeLineLabel"
         Me.TimeLineLabel.Size = New System.Drawing.Size(29, 127)
         Me.TimeLineLabel.TabIndex = 14
@@ -305,9 +305,9 @@ Partial Class MainForm
         '
         Me.LogLabel.BackColor = System.Drawing.Color.Transparent
         Me.LogLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.LogLabel.Location = New System.Drawing.Point(482, 90)
+        Me.LogLabel.Location = New System.Drawing.Point(510, 84)
         Me.LogLabel.Name = "LogLabel"
-        Me.LogLabel.Size = New System.Drawing.Size(275, 360)
+        Me.LogLabel.Size = New System.Drawing.Size(275, 302)
         Me.LogLabel.TabIndex = 23
         '
         'LabelScrollBar
@@ -316,9 +316,9 @@ Partial Class MainForm
         Me.LabelScrollBar.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.LabelScrollBar.ForeColor = System.Drawing.Color.White
         Me.LabelScrollBar.Image = Global.可视化作业调度系统.My.Resources.UnityResource.ScrollBar
-        Me.LabelScrollBar.Location = New System.Drawing.Point(676, 68)
+        Me.LabelScrollBar.Location = New System.Drawing.Point(752, 85)
         Me.LabelScrollBar.Name = "LabelScrollBar"
-        Me.LabelScrollBar.Size = New System.Drawing.Size(32, 72)
+        Me.LabelScrollBar.Size = New System.Drawing.Size(20, 45)
         Me.LabelScrollBar.TabIndex = 24
         Me.LabelScrollBar.Visible = False
         '
