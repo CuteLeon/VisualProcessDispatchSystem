@@ -29,7 +29,7 @@ Public Class MainForm
     Dim WaitJobList As New List(Of JobClass)
     Dim ExecuteJob As JobClass
     Dim SystemClock As Integer = 0
-    Dim NextJobSubscript As Integer
+    Dim NextJobSubscript As Integer = 0
     Dim ExecuteTime As Integer
     Dim SystemRandom As Random = New Random
     Dim CoordinateRectangle As Rectangle
@@ -202,8 +202,8 @@ Public Class MainForm
     ''' </summary>
     Private Sub ResetSystem()
         SystemClock = 0
-        NextJobSubscript = -1
-        ExecuteTime = -1
+        NextJobSubscript = 0
+        ExecuteTime = 0
         ExecuteJob = Nothing
         SystemClockLabel.Text = "0"
         SystemClockTimer.Stop()
@@ -214,6 +214,13 @@ Public Class MainForm
         ExecuteLabel.Hide()
         WaitLabel.Hide()
         NextJobTipLabel.Hide()
+        RecordPanel.Image = Nothing
+        If DispathComboBox.Items.Count = 4 Then
+            DispathComboBox.Items.Add("时间片轮转-RR")
+            DispathComboBox.Items.Add("多级反馈队列-MFQ")
+        Else
+            DispathComboBox.Enabled = True
+        End If
         TimeLineLabel.Location = New Point(CoordinateRectangle.Left - 14, CoordinateRectangle.Top - 1)
         LogLabel.TextBox.Text = "重置系统配置！" & vbCrLf
     End Sub
@@ -245,7 +252,6 @@ Public Class MainForm
         Dim TimeLineImage As Bitmap = New Bitmap(TimeLinePanel.Width, TimeLinePanel.Height)
         Dim TimeLineGraphics As Graphics = Graphics.FromImage(TimeLineImage)
         Dim TempPen As Pen = New Pen(Color.FromArgb(150, Color.MediumSpringGreen), 3)
-        'TimeLineGraphics.FillRectangle(Brushes.Yellow, CoordinateRectangle)
         TimeLineGraphics.DrawLine(TempPen, CoordinateRectangle.Left, CoordinateRectangle.Top + 1, CoordinateRectangle.Left, CoordinateRectangle.Bottom + 1)
         TimeLineGraphics.DrawLine(TempPen, CoordinateRectangle.Left - 1, CoordinateRectangle.Bottom + 1, CoordinateRectangle.Right + 1, CoordinateRectangle.Bottom + 1)
         TempPen = New Pen(Color.FromArgb(100, Color.White), 1)
@@ -255,27 +261,193 @@ Public Class MainForm
         Next
         For Index = 0 To Max_JobCount - 1
             TempPen = New Pen(AllJobList(Index).Color, 2)
-            TimeLineGraphics.DrawLine(TempPen, CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).StartTime / Max_SystemTime)), CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 5), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).EndTime / Max_SystemTime)), CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 5))
-            TimeLineGraphics.FillEllipse(New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + CoordinateRectangle.Width * (AllJobList(Index).StartTime / Max_SystemTime)) - 3, CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 2), 5, 5)
+            TimeLineGraphics.DrawLine(TempPen, CInt(CoordinateRectangle.Left + TimeCellWidth * (AllJobList(Index).StartTime)), CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 5), CInt(CoordinateRectangle.Left + TimeCellWidth * (AllJobList(Index).EndTime)), CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 5))
+            TimeLineGraphics.FillEllipse(New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + TimeCellWidth * (AllJobList(Index).StartTime)) - 3, CInt(CoordinateRectangle.Top + Index * TimeCellHeight + 2), 5, 5)
             TimeLineGraphics.DrawString("JID-" & Index, Me.Font, New SolidBrush(AllJobList(Index).Color), CInt(CoordinateRectangle.Left + TimeCellWidth * AllJobList(Index).StartTime - 10), CoordinateRectangle.Top + Index * TimeCellHeight - 7)
         Next
         Return TimeLineImage
     End Function
 
     ''' <summary>
-    ''' 绘制调度区图像
+    ''' 检查作业到达（针对 FCFS、SJF、HRN、HPF 调度算法）
     ''' </summary>
-    Private Function CreateDispathImage() As Image
+    ''' <return>是否加入了新作业</return> 
+    Private Function CheckJobArriveFCFS_SJF_HRN_HPF() As Boolean
+        Dim JIDs As String = vbNullString
+        Dim Index As Integer = 0, ListCount As Integer = AllJobList.Count
+        Do While Index < ListCount
+            If AllJobList(Index).StartTime = SystemClock Then
+                JIDs &= AllJobList(Index).ID & " 和 "
+                WaitJobList.Add(AllJobList(Index))
+                AllJobList.RemoveAt(Index)
+                ListCount -= 1
+            Else
+                Index += 1
+            End If
+        Loop
+        If JIDs <> vbNullString Then
+            LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  作业 {1} 加入等待执行队列！", SystemClock, JIDs.Remove(JIDs.Length - 3)) & vbCrLf
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    ''' <summary>
+    ''' 检查作业执行结束并启动下一个作业（针对 FCFS、SJF、HRN、HPF 调度算法）
+    ''' </summary>
+    ''' <returns>是否有作业删除</returns> 
+    Private Function CheckJobCompeletFCFS_SJF_HRN_HPF() As Boolean
+        If (IsNothing(ExecuteJob)) Then
+            If WaitJobList.Count > 0 Then
+                ExecuteJob = WaitJobList(NextJobSubscript)
+                Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
+                ExecuteLogs.Add(ExecuteLog)
+                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  开始执行 {1}！", SystemClock, ExecuteJob.Name) & vbCrLf
+                WaitJobList.RemoveAt(NextJobSubscript)
+                ExecuteTime = SystemClock
+                ExecuteRectangle.Size = New Size(DispathCellWidth * ExecuteJob.TimeLength, ExecuteRectangle.Height)
+            End If
+            Return (WaitJobList.Count > 0)
+        Else
+            If SystemClock >= ExecuteTime + ExecuteJob.TimeLength Then
+                If WaitJobList.Count > 0 Then
+                    LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
+                    ExecuteJob = WaitJobList(NextJobSubscript)
+                    Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
+                    ExecuteLogs.Add(ExecuteLog)
+                    WaitJobList.RemoveAt(NextJobSubscript)
+                    ExecuteTime = SystemClock
+                    ExecuteRectangle.Size = New Size(DispathCellWidth * (ExecuteJob.EndTime - ExecuteJob.StartTime), ExecuteRectangle.Height)
+                    Return (WaitJobList.Count > 0)
+                Else
+                    ExecuteJob = Nothing
+                End If
+            End If
+            Return False
+        End If
+    End Function
+
+    ''' <summary>
+    ''' 检查是否所有作业都已经完成
+    ''' </summary>
+    Private Function CheckAllJobCompelet() As Boolean
+        Return (SystemClock > 0 AndAlso AllJobList.Count = 0 AndAlso WaitJobList.Count = 0 AndAlso IsNothing(ExecuteJob))
+    End Function
+
+    ''' <summary>
+    ''' 检查是否没有开始任何作业
+    ''' </summary>
+    Private Function CheckJobNotStart() As Boolean
+        Return (SystemClock = 0 AndAlso AllJobList.Count = 0 AndAlso WaitJobList.Count = 0 AndAlso IsNothing(ExecuteJob))
+    End Function
+
+    ''' <summary>
+    ''' 所有作业完成
+    ''' </summary>
+    Private Sub AllJobCompelet()
+        If ReplayCheckBox.Checked Then
+            SystemClock = 0
+            NextJobSubscript = -1
+            ExecuteTime = -1
+            SystemClockLabel.Text = "0"
+            DispathPanel.Image = Nothing
+            TimeLineLabel.Location = New Point(CoordinateRectangle.Left - 14, CoordinateRectangle.Top - 1)
+            ExecuteLabel.Hide()
+            WaitLabel.Hide()
+            NextJobTipLabel.Hide()
+            LogLabel.TextBox.Text = "重置系统配置！" & vbCrLf
+            CreateJobsList()
+            TimeLinePanel.Image = CreateTimeLineImage()
+            ExecuteFunctionComman()
+        Else
+            LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
+            SystemClockTimer.Stop()
+            PlayPauseButton.Text = "播放   "
+            PlayPauseButton.Image = My.Resources.UnityResource.Play
+            MsgBox("年轻的樵夫呦！-貌似队列里所有的作业都已经执行完毕了呢！-快来重置生成新的作业队列吧！".Replace("-", vbCrLf), MsgBoxStyle.Information, "Leon：)")
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' 返回等待队列里下次要执行的作业下标（针对 FCFS、SJF、HRN、HPF 调度算法）
+    ''' </summary>
+    Private Function GetNextJobSubscript() As Integer
+        Dim JobSubscript As Integer = 0
+        Select Case DispathComboBox.SelectedIndex
+            Case 0
+                '先来先服务-FCFS
+                NextJobTipLabel.Location = New Point(WaitRectangle.Left - NextJobTipLabel.Width, WaitRectangle.Top + JobSubscript * DispathCellHeight)
+                Return JobSubscript
+            Case 1
+                '短作业优先-SJF
+                For Index As Integer = 1 To WaitJobList.Count - 1
+                    If (WaitJobList(Index).TimeLength < WaitJobList(JobSubscript).TimeLength) Then JobSubscript = Index
+                Next
+                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最短作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
+                NextJobTipLabel.Location = New Point(WaitRectangle.Left - NextJobTipLabel.Width, WaitRectangle.Top + JobSubscript * DispathCellHeight)
+                Return JobSubscript
+            Case 2
+                '最高响应比优先-HRN（响应比 = 1+ 等待时间/执行时间）
+                ResponseRatios.Clear()
+                For JobSubscript = 0 To WaitJobList.Count - 1
+                    ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(JobSubscript).StartTime + WaitJobList(JobSubscript).TimeLength) / WaitJobList(JobSubscript).TimeLength, 2))
+                Next
+                JobSubscript = ResponseRatios.IndexOf(ResponseRatios.Max)
+                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最高响应比作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
+                NextJobTipLabel.Location = New Point(WaitRectangle.Left - NextJobTipLabel.Width, WaitRectangle.Top + JobSubscript * DispathCellHeight)
+                Return (JobSubscript)
+            Case 3
+                '优先数调度-HPF
+                For Index As Integer = 1 To WaitJobList.Count - 1
+                    If (WaitJobList(Index).Priority > WaitJobList(JobSubscript).Priority) Then JobSubscript = Index
+                Next
+                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最高优先数作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
+                NextJobTipLabel.Location = New Point(WaitRectangle.Left - NextJobTipLabel.Width, WaitRectangle.Top + JobSubscript * DispathCellHeight)
+                Return JobSubscript
+        End Select
+        Return 0
+    End Function
+
+    ''' <summary>
+    ''' 调度函数枢纽，用于分配适当的调度算法
+    ''' </summary>
+    Private Sub ExecuteFunctionComman()
+        Select Case DispathComboBox.SelectedIndex
+            Case < 4
+                ExecuteFunctionFCFS_SJF_HRN_HPF()
+            Case 4
+                ExecuteFunctionRR()
+            Case 5
+
+        End Select
+    End Sub
+
+    ''' <summary>
+    ''' 系统时钟值守执行（针对 FCFS、SJF、HRN、HPF 调度算法）
+    ''' </summary>
+    Private Sub ExecuteFunctionFCFS_SJF_HRN_HPF()
+        '检查作业到达
+        If CheckJobArriveFCFS_SJF_HRN_HPF() Then NextJobSubscript = GetNextJobSubscript()
+        TimeLineLabel.Left = Math.Min(CoordinateRectangle.Right - 14, CInt(CoordinateRectangle.Left + TimeCellWidth * SystemClock - 14))
+        DispathPanel.Image = CreateDispathImageFCFS_SJF_HRN_HPF() '刷新调度区域图像
+        RecordPanel.Image = CreateRecordImageFCFS_SJF_HRN_HPF() '刷新图像日志记录
+        '检查作业结束
+        If CheckJobCompeletFCFS_SJF_HRN_HPF() Then NextJobSubscript = GetNextJobSubscript()
+        '检查所有作业完成
+        If CheckAllJobCompelet() Then AllJobCompelet()
+    End Sub
+
+    ''' <summary>
+    ''' 绘制调度区图像（针对 FCFS、SJF、HRN、HPF 调度算法）
+    ''' </summary>
+    Private Function CreateDispathImageFCFS_SJF_HRN_HPF() As Image
         On Error Resume Next
         Dim DispathImage As Bitmap = New Bitmap(DispathPanel.Width, DispathPanel.Height)
         Dim DispathGraphics As Graphics = Graphics.FromImage(DispathImage)
         Dim WaitJobPoint As Point
         Dim WaitJobSize As Size
         Dim TempPen As Pen
-        'DispathGraphics.FillRectangle(Brushes.Goldenrod, ExecuteRectangle)
-        'DispathGraphics.DrawRectangle(Pens.Red, ExecuteRectangle)
-        'DispathGraphics.FillRectangle(Brushes.AliceBlue, WaitRectangle)
-        'DispathGraphics.DrawRectangle(Pens.Red, WaitRectangle)
 
         DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance, WaitRectangle.Left + ShadowDistance, WaitRectangle.Bottom + ShadowDistance)
         DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance)
@@ -287,7 +459,7 @@ Public Class MainForm
             For Index As Integer = 0 To WaitJobList.Count - 1
                 InsWaitJob = WaitJobList(Index)
                 WaitJobPoint = New Point(WaitRectangle.Left, WaitRectangle.Top + Index * (DispathCellHeight + 2))
-                WaitJobSize = New Size(WaitRectangle.Width * InsWaitJob.TimeLength / Max_SystemTime, DispathCellHeight)
+                WaitJobSize = New Size(DispathCellWidth * InsWaitJob.TimeLength, DispathCellHeight)
 
                 TempPen = New Pen(InsWaitJob.Color, 1)
                 DispathGraphics.DrawLine(TempPen, WaitJobPoint.X, WaitJobPoint.Y + WaitJobSize.Height, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
@@ -300,21 +472,27 @@ Public Class MainForm
                 DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
 
                 DispathGraphics.FillRectangle(New SolidBrush(InsWaitJob.Color), New Rectangle(WaitJobPoint, WaitJobSize))
-                If (NextJobSubscript = Index) Then
-                    NextJobTipLabel.Location = New Point(WaitJobPoint.X - NextJobTipLabel.Width, WaitJobPoint.Y)
-                End If
-                WaitJobPoint.Offset(2, 2)
+
+                WaitJobPoint.Offset(3, 3)
                 Select Case DispathComboBox.SelectedIndex
                     Case 0
+                        DispathGraphics.DrawString(InsWaitJob.Name & " / 到达顺序：" & Index, Me.Font, Brushes.Black, WaitJobPoint)
+                        WaitJobPoint.Offset(-1, -1)
                         DispathGraphics.DrawString(InsWaitJob.Name & " / 到达顺序：" & Index, Me.Font, Brushes.White, WaitJobPoint)
                     Case 1
+                        DispathGraphics.DrawString(InsWaitJob.Name & " / 作业长度：" & InsWaitJob.TimeLength, Me.Font, Brushes.Black, WaitJobPoint)
+                        WaitJobPoint.Offset(-1, -1)
                         DispathGraphics.DrawString(InsWaitJob.Name & " / 作业长度：" & InsWaitJob.TimeLength, Me.Font, Brushes.White, WaitJobPoint)
                     Case 2
-                        If ResponseRatios.Count > Index Then DispathGraphics.DrawString(InsWaitJob.Name & " / 响应比：" & ResponseRatios(Index), Me.Font, Brushes.White, WaitJobPoint)
+                        If ResponseRatios.Count > Index Then
+                            DispathGraphics.DrawString(InsWaitJob.Name & " / 响应比：" & ResponseRatios(Index), Me.Font, Brushes.Black, WaitJobPoint)
+                            WaitJobPoint.Offset(-1, -1)
+                            DispathGraphics.DrawString(InsWaitJob.Name & " / 响应比：" & ResponseRatios(Index), Me.Font, Brushes.White, WaitJobPoint)
+                        End If
                     Case 3
+                        DispathGraphics.DrawString(InsWaitJob.Name & " / 优先数：" & InsWaitJob.Priority, Me.Font, Brushes.Black, WaitJobPoint)
+                        WaitJobPoint.Offset(-1, -1)
                         DispathGraphics.DrawString(InsWaitJob.Name & " / 优先数：" & InsWaitJob.Priority, Me.Font, Brushes.White, WaitJobPoint)
-                    Case 4
-                    Case 5
                 End Select
             Next
         Else
@@ -328,7 +506,7 @@ Public Class MainForm
             End If
             ExecuteLabel.Text = "正在执行：" & ExecuteJob.Name
             TempPen = New Pen(ExecuteJob.Color, 1)
-            ExecuteRectangle.Location = New Point(WaitRectangle.Left - WaitRectangle.Width * (SystemClock - ExecuteTime) / Max_SystemTime, ExecuteRectangle.Top)
+            ExecuteRectangle.Location = New Point(WaitRectangle.Left - DispathCellWidth * (SystemClock - ExecuteTime), ExecuteRectangle.Top)
 
             DispathGraphics.DrawLine(TempPen, ExecuteRectangle.Left, ExecuteRectangle.Top + ExecuteRectangle.Height, ExecuteRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ExecuteRectangle.Height + ShadowDistance)
             DispathGraphics.DrawLine(TempPen, ExecuteRectangle.Left + ExecuteRectangle.Width, ExecuteRectangle.Top, ExecuteRectangle.Left + ExecuteRectangle.Width + ShadowDistance, ExecuteRectangle.Top + ShadowDistance)
@@ -352,17 +530,120 @@ Public Class MainForm
     End Function
 
     ''' <summary>
-    ''' 检查作业到达
+    ''' 绘制图像日志记录（针对 FCFS、SJF、HRN、HPF 调度算法）
     ''' </summary>
-    Private Sub CheckJobArrive()
+    Private Function CreateRecordImageFCFS_SJF_HRN_HPF() As Bitmap
+        On Error Resume Next
+        Dim RecordImage As Bitmap = New Bitmap(RecordPanel.Width, RecordPanel.Height)
+        Dim RecordGraphics As Graphics = Graphics.FromImage(RecordImage)
+        Dim InsExecuteLog As ExecuteLog
+        RecordCellWidth = RecordPanel.Width / SystemClock
+        For Index As Integer = 0 To ExecuteLogs.Count - 1
+            InsExecuteLog = ExecuteLogs(Index)
+            RecordGraphics.DrawLine(New Pen(Color.FromArgb(50, Color.White), 1), CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), 0, CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), RecordPanel.Height)
+            RecordGraphics.DrawLine(New Pen(InsExecuteLog.Color, 2),
+                CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4),
+                CInt(InsExecuteLog.CompleteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4))
+            RecordGraphics.DrawString(InsExecuteLog.Name, Me.Font, New SolidBrush(InsExecuteLog.Color), CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight - 10))
+            RecordGraphics.DrawString(InsExecuteLog.ExecuteTime, Me.Font, Brushes.White, CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), RecordPanel.Height - 13)
+        Next
+        Return RecordImage
+    End Function
+
+    ''' <summary>
+    ''' 系统时钟值守执行（针对 RR 调度算法）
+    ''' </summary>
+    Private Sub ExecuteFunctionRR()
+        '检查作业到达
+        CheckJobArriveRR()
+        Dim NextSubscriptTipsLocation As Integer
+        Dim InsWaitJob As JobClass
+        TimeLineLabel.Left = Math.Min(CoordinateRectangle.Right - 14, CInt(CoordinateRectangle.Left + TimeCellWidth * SystemClock - 14))
+        If WaitJobList.Count > 0 Then
+            InsWaitJob = WaitJobList(NextJobSubscript)
+            Dim ExecuteLog As ExecuteLog = New ExecuteLog(InsWaitJob.ID, InsWaitJob.Name, SystemClock, 1, InsWaitJob.Color)
+            ExecuteLogs.Add(ExecuteLog)
+            InsWaitJob.TimeSlice += 1
+            NextSubscriptTipsLocation = WaitRectangle.Left - DispathCellWidth * InsWaitJob.TimeSlice - NextJobTipLabel.Width
+            If NextSubscriptTipsLocation < 0 Then
+                NextSubscriptTipsLocation = WaitRectangle.Left + (InsWaitJob.TimeLength - InsWaitJob.TimeSlice) * DispathCellWidth + 5
+                NextJobTipLabel.Text = "◀ 正在执行作业"
+            Else
+                NextJobTipLabel.Text = "正在执行作业 ▶"
+            End If
+            NextJobTipLabel.Location = New Point(NextSubscriptTipsLocation, WaitRectangle.Top + NextJobSubscript * (DispathCellHeight + 2))
+            If Not NextJobTipLabel.Visible Then NextJobTipLabel.Show()
+            If InsWaitJob.TimeSlice >= InsWaitJob.TimeLength Then
+                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！从队列移除！", SystemClock, InsWaitJob.Name) & vbCrLf
+                WaitJobList.RemoveAt(NextJobSubscript)
+                If NextJobSubscript = WaitJobList.Count Then NextJobSubscript = 0
+            Else
+                NextJobSubscript = (NextJobSubscript + 1) Mod WaitJobList.Count
+            End If
+            DispathPanel.Image = CreateDispathImageRR() '刷新调度区域图像
+        Else
+            If NextJobTipLabel.Visible Then NextJobTipLabel.Hide()
+        End If
+
+        RecordPanel.Image = CreateRecordImageRR() '刷新图像日志记录
+        '检查所有作业结束
+        If CheckAllJobCompelet() Then AllJobCompelet()
+    End Sub
+
+    ''' <summary>
+    ''' 绘制调度区图像（针对 RR 调度算法）
+    ''' </summary>
+    Private Function CreateDispathImageRR() As Image
+        On Error Resume Next
+        Dim DispathImage As Bitmap = New Bitmap(DispathPanel.Width, DispathPanel.Height)
+        Dim DispathGraphics As Graphics = Graphics.FromImage(DispathImage)
+        Dim WaitJobPoint As Point
+        Dim WaitJobSize As Size
+        Dim TempPen As Pen
+
+        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance, WaitRectangle.Left + ShadowDistance, WaitRectangle.Bottom + ShadowDistance)
+        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance)
+
+        Dim InsWaitJob As JobClass
+        For Index As Integer = 0 To WaitJobList.Count - 1
+            InsWaitJob = WaitJobList(Index)
+            WaitJobPoint = New Point(WaitRectangle.Left - DispathCellWidth * InsWaitJob.TimeSlice, WaitRectangle.Top + Index * (DispathCellHeight + 2))
+            WaitJobSize = New Size(DispathCellWidth * InsWaitJob.TimeLength, DispathCellHeight)
+
+            TempPen = New Pen(InsWaitJob.Color, 1)
+            DispathGraphics.DrawLine(TempPen, WaitJobPoint.X, WaitJobPoint.Y + WaitJobSize.Height, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
+            DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width, WaitJobPoint.Y, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + ShadowDistance)
+            DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width, WaitJobPoint.Y + WaitJobSize.Height, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
+
+            DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + ShadowDistance, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
+            DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + ShadowDistance, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + ShadowDistance)
+            DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + ShadowDistance, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
+            DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
+
+            DispathGraphics.FillRectangle(New SolidBrush(InsWaitJob.Color), New Rectangle(WaitJobPoint, WaitJobSize))
+            WaitJobPoint.Offset(3, 3)
+            DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.Black, WaitJobPoint)
+            WaitJobPoint.Offset(-1, -1)
+            DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.White, WaitJobPoint)
+        Next
+
+        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left, WaitRectangle.Bottom)
+        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, WaitRectangle.Bottom, WaitRectangle.Left + ShadowDistance, WaitRectangle.Bottom + ShadowDistance)
+
+        Return DispathImage
+    End Function
+
+    ''' <summary>
+    ''' 检查作业到达（针对 RR 调度算法）
+    ''' </summary>
+    ''' <return>是否加入了新作业</return> 
+    Private Sub CheckJobArriveRR()
         Dim JIDs As String = vbNullString
         Dim Index As Integer = 0, ListCount As Integer = AllJobList.Count
         Do While Index < ListCount
             If AllJobList(Index).StartTime = SystemClock Then
                 JIDs &= AllJobList(Index).ID & " 和 "
-
                 WaitJobList.Add(AllJobList(Index))
-
                 AllJobList.RemoveAt(Index)
                 ListCount -= 1
             Else
@@ -375,131 +656,26 @@ Public Class MainForm
     End Sub
 
     ''' <summary>
-    ''' 检查作业执行结束
+    ''' 绘制图像日志记录（针对 RR 调度算法）
     ''' </summary>
-    Private Sub CheckJobCompelet()
-        If (IsNothing(ExecuteJob)) Then
-            If WaitJobList.Count > 0 Then
-                ExecuteJob = WaitJobList(NextJobSubscript)
-                Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
-                ExecuteLogs.Add(ExecuteLog)
-                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  开始执行 {1}！", SystemClock, ExecuteJob.Name) & vbCrLf
-                WaitJobList.RemoveAt(NextJobSubscript)
-                ExecuteTime = SystemClock
-                ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
-            End If
-        Else
-            If SystemClock >= ExecuteTime + ExecuteJob.TimeLength Then
-                If WaitJobList.Count > 0 Then
-                    LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  {1} 执行完毕！开始执行 {2}！", SystemClock, ExecuteJob.Name, WaitJobList(NextJobSubscript).Name) & vbCrLf
-                    ExecuteJob = WaitJobList(NextJobSubscript)
-                    Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
-                    ExecuteLogs.Add(ExecuteLog)
-                    WaitJobList.RemoveAt(NextJobSubscript)
-                    ExecuteTime = SystemClock
-                    ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
-                Else
-                    If AllJobList.Count = 0 Then
-                        If ReplayCheckBox.Checked Then
-                            SystemClock = 0
-                            NextJobSubscript = -1
-                            ExecuteTime = -1
-                            SystemClockLabel.Text = "0"
-                            DispathPanel.Image = Nothing
-                            TimeLineLabel.Location = New Point(CoordinateRectangle.Left - 14, CoordinateRectangle.Top - 1)
-                            ExecuteLabel.Hide()
-                            WaitLabel.Hide()
-                            NextJobTipLabel.Hide()
-                            LogLabel.TextBox.Text = "重置系统配置！" & vbCrLf
-                            CreateJobsList()
-                            TimeLinePanel.Image = CreateTimeLineImage()
-                            ExecuteFunction()
-                        Else
-                            LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  所有作业已完成！", SystemClock) & vbCrLf
-                            SystemClockTimer.Stop()
-                            PlayPauseButton.Text = "播放   "
-                            PlayPauseButton.Image = My.Resources.UnityResource.Play
-                            MsgBox("年轻的樵夫呦！-貌似队列里所有的作业都已经执行完毕了呢！-快来重置生成新的作业队列吧！".Replace("-", vbCrLf), MsgBoxStyle.Information, "Leon：)")
-                        End If
-                    End If
-                    ExecuteJob = Nothing
-                End If
-            End If
-        End If
-    End Sub
-
-    ''' <summary>
-    ''' 返回等待队列里下次要执行的作业下标
-    ''' </summary>
-    Private Function GetNextJobSubscript() As Integer
-        Dim JobSubscript As Integer = 0
-        Select Case DispathComboBox.SelectedIndex
-            Case 0
-                '先来先服务-FCFS
-                Return JobSubscript
-            Case 1
-                '短作业优先-SJF
-                For Index As Integer = 1 To WaitJobList.Count - 1
-                    If (WaitJobList(Index).TimeLength < WaitJobList(JobSubscript).TimeLength) Then JobSubscript = Index
-                Next
-                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最短作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
-                Return JobSubscript
-            Case 2
-                '最高响应比优先-HRN（响应比 = 1+ 等待时间/执行时间）
-                ResponseRatios.Clear()
-                Dim Index As Integer
-                For Index = 0 To WaitJobList.Count - 1
-                    ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(Index).StartTime + WaitJobList(Index).TimeLength) / WaitJobList(Index).TimeLength, 2))
-                Next
-                Index = ResponseRatios.IndexOf(ResponseRatios.Max)
-                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最高响应比作业：{1}", SystemClock, WaitJobList(Index).Name) & vbCrLf
-                Return (Index)
-            Case 3
-                '优先数调度-HPF
-                For Index As Integer = 1 To WaitJobList.Count - 1
-                    If (WaitJobList(Index).Priority > WaitJobList(JobSubscript).Priority) Then JobSubscript = Index
-                Next
-                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最高优先数作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
-                Return JobSubscript
-            Case 4
-                '时间片轮转 = RR
-            Case 5
-                '多级反馈队列
-        End Select
-        Return 0
-    End Function
-
-    ''' <summary>
-    ''' 系统时钟值守执行
-    ''' </summary>
-    Private Sub ExecuteFunction()
-        CheckJobArrive() '检查任务到达
-        If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
-        TimeLineLabel.Left = Math.Min(CoordinateRectangle.Right - 14, CInt(CoordinateRectangle.Left + TimeCellWidth * SystemClock - 14))
-        DispathPanel.Image = CreateDispathImage() '刷新调度区域图像
-        RecordPanel.Image = CreateRecordImage() '刷新图像日志记录
-        CheckJobCompelet() '检查任务结束
-        If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
-    End Sub
-
-    ''' <summary>
-    ''' 绘制值守
-    ''' </summary>
-    Private Function CreateRecordImage() As Bitmap
+    Private Function CreateRecordImageRR() As Bitmap
         On Error Resume Next
         Dim RecordImage As Bitmap = New Bitmap(RecordPanel.Width, RecordPanel.Height)
         Dim RecordGraphics As Graphics = Graphics.FromImage(RecordImage)
         Dim InsExecuteLog As ExecuteLog
+        Dim LastJID As Integer = Integer.MinValue
         RecordCellWidth = RecordPanel.Width / SystemClock
-        'RecordGraphics.FillRectangle(Brushes.Red, New Rectangle(0, 0, RecordCellWidth, RecordCellHeight))
         For Index As Integer = 0 To ExecuteLogs.Count - 1
             InsExecuteLog = ExecuteLogs(Index)
-            RecordGraphics.DrawLine(New Pen(Color.FromArgb(50, Color.White), 1), CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), 0, CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), RecordPanel.Height)
+
             RecordGraphics.DrawLine(New Pen(InsExecuteLog.Color, 2),
-                CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4),
-                CInt(InsExecuteLog.CompleteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4))
-            RecordGraphics.DrawString(InsExecuteLog.Name, Me.Font, New SolidBrush(InsExecuteLog.Color), CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight - 10))
-            RecordGraphics.DrawString(InsExecuteLog.ExecuteTime, Me.Font, Brushes.White, CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), RecordPanel.Height - 13)
+            CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4),
+            CInt(InsExecuteLog.CompleteTime * RecordCellWidth), CInt(InsExecuteLog.ID * RecordCellHeight + 4))
+
+            If LastJID <> InsExecuteLog.ID Then
+                RecordGraphics.DrawLine(New Pen(Color.FromArgb(50, Color.White), 1), CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), 0, CInt(InsExecuteLog.ExecuteTime * RecordCellWidth), RecordPanel.Height)
+                LastJID = InsExecuteLog.ID
+            End If
         Next
         Return RecordImage
     End Function
@@ -525,12 +701,20 @@ Public Class MainForm
 
     Private Sub PlayPauseButton_Click(sender As Object, e As EventArgs) Handles PlayPauseButton.Click
         If PlayPauseButton.Text = "播放   " Then
-            If (AllJobList.Count = 0 AndAlso WaitJobList.Count = 0 AndAlso IsNothing(ExecuteJob)) Then Exit Sub '所有作业完成后不会继续播放
+            If CheckJobNotStart() Then Exit Sub
             PlayPauseButton.Text = "停止   "
             PlayPauseButton.Image = My.Resources.UnityResource.Pause
-            ExecuteFunction()
+            ExecuteFunctionComman()
             SystemClockTimer.Start()
             If Not TimeLineLabel.Visible Then TimeLineLabel.Show()
+            If DispathComboBox.SelectedIndex > 3 Then
+                NextJobTipLabel.Text = "下次应执行作业 ▶"
+                DispathComboBox.Enabled = False
+            Else
+                NextJobTipLabel.Text = "正在执行作业 ▶"
+                DispathComboBox.Items.RemoveAt(4)
+                DispathComboBox.Items.RemoveAt(4)
+            End If
         Else
             PlayPauseButton.Text = "播放   "
             PlayPauseButton.Image = My.Resources.UnityResource.Play
@@ -545,15 +729,14 @@ Public Class MainForm
     Private Sub SystemClockTimer_Tick(sender As Object, e As EventArgs) Handles SystemClockTimer.Tick
         SystemClock += 1
         SystemClockLabel.Text = SystemClock
-
-        ExecuteFunction()
-
+        ExecuteFunctionComman()
         GC.Collect()
     End Sub
 
     Private Sub DispathComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles DispathComboBox.SelectedIndexChanged
-        If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
-        DispathPanel.Image = CreateDispathImage()
+        If SystemClock = 0 Then Exit Sub
+        If DispathComboBox.SelectedIndex < 4 AndAlso WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
+        ExecuteFunctionComman()
     End Sub
 
 #End Region

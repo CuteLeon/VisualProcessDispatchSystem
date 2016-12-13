@@ -243,9 +243,9 @@ Partial Class MainForm
         Me.NextJobTipLabel.ForeColor = System.Drawing.Color.Red
         Me.NextJobTipLabel.Location = New System.Drawing.Point(347, 274)
         Me.NextJobTipLabel.Name = "NextJobTipLabel"
-        Me.NextJobTipLabel.Size = New System.Drawing.Size(119, 20)
+        Me.NextJobTipLabel.Size = New System.Drawing.Size(123, 20)
         Me.NextJobTipLabel.TabIndex = 18
-        Me.NextJobTipLabel.Text = "下次应执行作业▶"
+        Me.NextJobTipLabel.Text = "下次应执行作业 ▶"
         Me.NextJobTipLabel.Visible = False
         '
         'DispathComboBox
