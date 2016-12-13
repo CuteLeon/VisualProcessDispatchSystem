@@ -145,7 +145,7 @@ Partial Class MainForm
         Me.SystemClockTitle.BackColor = System.Drawing.Color.Transparent
         Me.SystemClockTitle.Font = New System.Drawing.Font("微软雅黑", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.SystemClockTitle.ForeColor = System.Drawing.Color.Aqua
-        Me.SystemClockTitle.Location = New System.Drawing.Point(634, 57)
+        Me.SystemClockTitle.Location = New System.Drawing.Point(653, 57)
         Me.SystemClockTitle.Name = "SystemClockTitle"
         Me.SystemClockTitle.Size = New System.Drawing.Size(90, 21)
         Me.SystemClockTitle.TabIndex = 9
@@ -256,10 +256,10 @@ Partial Class MainForm
         Me.DispathComboBox.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.DispathComboBox.ForeColor = System.Drawing.Color.White
         Me.DispathComboBox.FormattingEnabled = True
-        Me.DispathComboBox.Items.AddRange(New Object() {"先来先服务-FCFS", "短作业优先-SJF", "最高响应比优先-HRN", "优先数调度-HPF", "时间片轮转=RR", "多级反馈队列"})
+        Me.DispathComboBox.Items.AddRange(New Object() {"先来先服务-FCFS", "短作业优先-SJF", "最高响应比优先-HRN", "优先数调度-HPF", "时间片轮转-RR", "多级反馈队列-MFQ"})
         Me.DispathComboBox.Location = New System.Drawing.Point(481, 46)
         Me.DispathComboBox.Name = "DispathComboBox"
-        Me.DispathComboBox.Size = New System.Drawing.Size(145, 28)
+        Me.DispathComboBox.Size = New System.Drawing.Size(160, 28)
         Me.DispathComboBox.TabIndex = 19
         '
         'SettingButton
