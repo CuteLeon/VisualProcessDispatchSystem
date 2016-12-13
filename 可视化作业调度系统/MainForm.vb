@@ -229,7 +229,7 @@ Public Class MainForm
         For Index As Integer = 0 To Max_JobCount - 1
             Dim JobStartTime As Integer = SystemRandom.Next(Max_SystemTime)
             Dim JobEndTime As Integer = JobStartTime + 1 + SystemRandom.Next(Max_SystemTime - JobStartTime)
-            Dim InsJob As JobClass = New JobClass(Index, "作业-" & Index, JobStartTime, JobEndTime, JobColors(Index))
+            Dim InsJob As JobClass = New JobClass(Index, "作业-" & Index, JobStartTime, JobEndTime, JobColors(Index), SystemRandom.Next(Max_JobCount))
             AllJobList.Add(InsJob)
             LogLabel.TextBox.Text &= String.Format("    生成作业：{0} / 时间：{1}-{2}", InsJob.Name, InsJob.StartTime, InsJob.EndTime) & vbCrLf
         Next
@@ -312,6 +312,7 @@ Public Class MainForm
                     Case 2
                         If ResponseRatios.Count > Index Then DispathGraphics.DrawString(InsWaitJob.Name & " / 响应比：" & ResponseRatios(Index), Me.Font, Brushes.White, WaitJobPoint)
                     Case 3
+                        DispathGraphics.DrawString(InsWaitJob.Name & " / 优先数：" & InsWaitJob.Priority, Me.Font, Brushes.White, WaitJobPoint)
                     Case 4
                     Case 5
                 End Select
@@ -361,7 +362,6 @@ Public Class MainForm
                 JIDs &= AllJobList(Index).ID & " 和 "
 
                 WaitJobList.Add(AllJobList(Index))
-                NextJobSubscript = GetNextJobSubscript()
 
                 AllJobList.RemoveAt(Index)
                 ListCount -= 1
@@ -385,7 +385,6 @@ Public Class MainForm
                 ExecuteLogs.Add(ExecuteLog)
                 LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  开始执行 {1}！", SystemClock, ExecuteJob.Name) & vbCrLf
                 WaitJobList.RemoveAt(NextJobSubscript)
-                If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
                 ExecuteTime = SystemClock
                 ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
             End If
@@ -397,7 +396,6 @@ Public Class MainForm
                     Dim ExecuteLog As ExecuteLog = New ExecuteLog(ExecuteJob.ID, ExecuteJob.Name, SystemClock, ExecuteJob.TimeLength, ExecuteJob.Color)
                     ExecuteLogs.Add(ExecuteLog)
                     WaitJobList.RemoveAt(NextJobSubscript)
-                    If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
                     ExecuteTime = SystemClock
                     ExecuteRectangle.Size = New Size(WaitRectangle.Width * (ExecuteJob.EndTime - ExecuteJob.StartTime) / Max_SystemTime, ExecuteRectangle.Height)
                 Else
@@ -447,17 +445,22 @@ Public Class MainForm
                 LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最短作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
                 Return JobSubscript
             Case 2
-                '最高响应比优先-HRN
+                '最高响应比优先-HRN（响应比 = 1+ 等待时间/执行时间）
                 ResponseRatios.Clear()
                 Dim Index As Integer
                 For Index = 0 To WaitJobList.Count - 1
-                    ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(Index).StartTime + WaitJobList(Index).TimeLength) / WaitJobList(Index).TimeLength + 1, 2))
+                    ResponseRatios.Add(Math.Round((SystemClock - WaitJobList(Index).StartTime + WaitJobList(Index).TimeLength) / WaitJobList(Index).TimeLength, 2))
                 Next
                 Index = ResponseRatios.IndexOf(ResponseRatios.Max)
                 LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最高响应比作业：{1}", SystemClock, WaitJobList(Index).Name) & vbCrLf
                 Return (Index)
             Case 3
                 '优先数调度-HPF
+                For Index As Integer = 1 To WaitJobList.Count - 1
+                    If (WaitJobList(Index).Priority > WaitJobList(JobSubscript).Priority) Then JobSubscript = Index
+                Next
+                LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  找到最高优先数作业：{1}", SystemClock, WaitJobList(JobSubscript).Name) & vbCrLf
+                Return JobSubscript
             Case 4
                 '时间片轮转 = RR
             Case 5
@@ -471,10 +474,12 @@ Public Class MainForm
     ''' </summary>
     Private Sub ExecuteFunction()
         CheckJobArrive() '检查任务到达
+        If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
         TimeLineLabel.Left = Math.Min(CoordinateRectangle.Right - 14, CInt(CoordinateRectangle.Left + TimeCellWidth * SystemClock - 14))
         DispathPanel.Image = CreateDispathImage() '刷新调度区域图像
-        RecordPanel.Image = CreateRecordImage()
+        RecordPanel.Image = CreateRecordImage() '刷新图像日志记录
         CheckJobCompelet() '检查任务结束
+        If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
     End Sub
 
     ''' <summary>
@@ -540,15 +545,15 @@ Public Class MainForm
     Private Sub SystemClockTimer_Tick(sender As Object, e As EventArgs) Handles SystemClockTimer.Tick
         SystemClock += 1
         SystemClockLabel.Text = SystemClock
+
         ExecuteFunction()
+
         GC.Collect()
     End Sub
 
     Private Sub DispathComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles DispathComboBox.SelectedIndexChanged
-        If WaitJobList.Count > 0 Then
-            NextJobSubscript = GetNextJobSubscript()
-            CreateDispathImage()
-        End If
+        If WaitJobList.Count > 0 Then NextJobSubscript = GetNextJobSubscript()
+        DispathPanel.Image = CreateDispathImage()
     End Sub
 
 #End Region

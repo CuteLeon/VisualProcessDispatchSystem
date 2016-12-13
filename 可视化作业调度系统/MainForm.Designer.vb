@@ -327,7 +327,6 @@ Partial Class MainForm
         Me.Controls.Add(Me.TimeLineLabel)
         Me.Controls.Add(Me.SpeedUpButton)
         Me.Controls.Add(Me.SpeedDownButton)
-        Me.Controls.Add(Me.SystemClockLabel)
         Me.Controls.Add(Me.SystemClockTitle)
         Me.Controls.Add(Me.PlayPauseButton)
         Me.Controls.Add(Me.DispathPanel)
@@ -336,6 +335,7 @@ Partial Class MainForm
         Me.Controls.Add(Me.CreateJobListButton)
         Me.Controls.Add(Me.CloseButton)
         Me.Controls.Add(Me.MinButton)
+        Me.Controls.Add(Me.SystemClockLabel)
         Me.DoubleBuffered = True
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.Name = "MainForm"
