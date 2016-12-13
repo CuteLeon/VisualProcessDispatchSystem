@@ -348,8 +348,8 @@ Public Class MainForm
     Private Sub AllJobCompelet()
         If ReplayCheckBox.Checked Then
             SystemClock = 0
-            NextJobSubscript = -1
-            ExecuteTime = -1
+            NextJobSubscript = 0
+            ExecuteTime = 0
             SystemClockLabel.Text = "0"
             DispathPanel.Image = Nothing
             TimeLineLabel.Location = New Point(CoordinateRectangle.Left - 14, CoordinateRectangle.Top - 1)
