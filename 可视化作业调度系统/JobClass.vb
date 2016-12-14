@@ -32,6 +32,15 @@
     ''' </summary>
     Public TimeSlice As Integer
 
+    ''' <summary>
+    ''' 作业对象构建函数
+    ''' </summary>
+    ''' <param name="jID">作业ID</param>
+    ''' <param name="jName">作业名称</param>
+    ''' <param name="jStartTime">作业到达时间</param>
+    ''' <param name="jEndTime">作业预计结束时间</param>
+    ''' <param name="jColor">作业标记颜色</param>
+    ''' <param name="jPriority">作业优先级（越大越优先）</param>
     Public Sub New(ByVal jID As Integer, ByVal jName As String, ByVal jStartTime As Integer, ByVal jEndTime As Integer, ByVal jColor As Color, ByVal jPriority As Integer)
         ID = jID
         Name = jName

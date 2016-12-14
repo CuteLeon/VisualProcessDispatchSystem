@@ -43,7 +43,10 @@ Partial Class MainForm
         Me.SettingButton = New System.Windows.Forms.Label()
         Me.RecordPanel = New System.Windows.Forms.Label()
         Me.ReplayCheckBox = New System.Windows.Forms.CheckBox()
+        Me.TimeSliceLabel = New System.Windows.Forms.Label()
+        Me.TimeSliceNumeric = New System.Windows.Forms.NumericUpDown()
         Me.LogLabel = New 可视化作业调度系统.LeonTextBox()
+        CType(Me.TimeSliceNumeric, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'CloseButton
@@ -299,6 +302,34 @@ Partial Class MainForm
         Me.ReplayCheckBox.Text = "完成后自动重置并播放"
         Me.ReplayCheckBox.UseVisualStyleBackColor = False
         '
+        'TimeSliceLabel
+        '
+        Me.TimeSliceLabel.AutoSize = True
+        Me.TimeSliceLabel.BackColor = System.Drawing.Color.Transparent
+        Me.TimeSliceLabel.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.TimeSliceLabel.ForeColor = System.Drawing.Color.White
+        Me.TimeSliceLabel.Location = New System.Drawing.Point(481, 50)
+        Me.TimeSliceLabel.Name = "TimeSliceLabel"
+        Me.TimeSliceLabel.Size = New System.Drawing.Size(65, 20)
+        Me.TimeSliceLabel.TabIndex = 24
+        Me.TimeSliceLabel.Text = "时间片："
+        Me.TimeSliceLabel.Visible = False
+        '
+        'TimeSliceNumeric
+        '
+        Me.TimeSliceNumeric.BackColor = System.Drawing.Color.Black
+        Me.TimeSliceNumeric.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.TimeSliceNumeric.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.TimeSliceNumeric.ForeColor = System.Drawing.Color.White
+        Me.TimeSliceNumeric.Location = New System.Drawing.Point(546, 47)
+        Me.TimeSliceNumeric.Maximum = New Decimal(New Integer() {60, 0, 0, 0})
+        Me.TimeSliceNumeric.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.TimeSliceNumeric.Name = "TimeSliceNumeric"
+        Me.TimeSliceNumeric.Size = New System.Drawing.Size(95, 26)
+        Me.TimeSliceNumeric.TabIndex = 26
+        Me.TimeSliceNumeric.Value = New Decimal(New Integer() {5, 0, 0, 0})
+        Me.TimeSliceNumeric.Visible = False
+        '
         'LogLabel
         '
         Me.LogLabel.BackColor = System.Drawing.Color.FromArgb(CType(CType(50, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(255, Byte), Integer))
@@ -316,6 +347,8 @@ Partial Class MainForm
         Me.BackgroundImage = Global.可视化作业调度系统.My.Resources.UnityResource.BGI
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch
         Me.ClientSize = New System.Drawing.Size(799, 399)
+        Me.Controls.Add(Me.TimeSliceNumeric)
+        Me.Controls.Add(Me.TimeSliceLabel)
         Me.Controls.Add(Me.LogLabel)
         Me.Controls.Add(Me.ReplayCheckBox)
         Me.Controls.Add(Me.RecordPanel)
@@ -342,6 +375,7 @@ Partial Class MainForm
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "操作系统调度算法可视化"
         Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
+        CType(Me.TimeSliceNumeric, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -368,4 +402,6 @@ Partial Class MainForm
     Friend WithEvents RecordPanel As Label
     Friend WithEvents ReplayCheckBox As CheckBox
     Friend WithEvents LogLabel As LeonTextBox
+    Friend WithEvents TimeSliceLabel As Label
+    Friend WithEvents TimeSliceNumeric As NumericUpDown
 End Class
