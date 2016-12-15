@@ -130,6 +130,7 @@ Partial Class MainForm
         '
         Me.PlayPauseButton.BackColor = System.Drawing.Color.Transparent
         Me.PlayPauseButton.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.PlayPauseButton.Enabled = False
         Me.PlayPauseButton.Font = New System.Drawing.Font("微软雅黑", 10.5!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
         Me.PlayPauseButton.ForeColor = System.Drawing.Color.White
         Me.PlayPauseButton.Image = Global.可视化作业调度系统.My.Resources.UnityResource.Play

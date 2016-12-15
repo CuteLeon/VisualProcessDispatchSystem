@@ -109,6 +109,10 @@ Public Class MainForm
     ''' </summary>
     Dim DispathRectangle As Rectangle
     ''' <summary>
+    ''' 调度区-多级队列调度子队列区域
+    ''' </summary>
+    Dim DispathPriorityListRectangle As Rectangle
+    ''' <summary>
     ''' 调度区域-执行区域
     ''' </summary>
     Dim ExecuteRectangle As Rectangle
@@ -132,6 +136,10 @@ Public Class MainForm
     ''' 调度区域单位时间对应的图像高度
     ''' </summary>
     Dim DispathCellHeight As Double
+    ''' <summary>
+    ''' 多级队列调度每个队列图像区域单位时间对应的图像宽度
+    ''' </summary>
+    Dim PriorityListCellWidth As Double
     ''' <summary>
     ''' 日志区域单位时间对应的图像宽度
     ''' </summary>
@@ -354,6 +362,7 @@ Public Class MainForm
         ExecuteJob = Nothing
         SystemClockLabel.Text = "0"
         SystemClockTimer.Stop()
+        PlayPauseButton.Enabled = True
         PlayPauseButton.Text = "播放   "
         PlayPauseButton.Image = My.Resources.UnityResource.Play
         DispathPanel.Image = Nothing
@@ -1060,27 +1069,29 @@ Public Class MainForm
         Dim WaitJobSize As Size
         Dim TempPen As Pen
         Dim InsWaitJob As JobClass
-        Dim LastTop As Integer = ExecuteRectangle.Top
-
-        '绘制等待分界线
-        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance, WaitRectangle.Left + ShadowDistance, WaitRectangle.Bottom + ShadowDistance)
-        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left + ShadowDistance, ExecuteRectangle.Top + ShadowDistance)
+        Dim LastTop As Integer
+        DispathPriorityListRectangle.Location = New Point(DispathRectangle.Left, DispathRectangle.Top)
         '遍历所有级队列
         For ListIndex As Integer = 0 To PriorityList.Length - 1
+            DispathPriorityListRectangle.Offset(5, 5)
+            DispathGraphics.DrawRectangle(Pens.DimGray, DispathPriorityListRectangle)
+            DispathPriorityListRectangle.Offset(-5, -5)
+            DispathGraphics.DrawLine(Pens.LightGray, DispathPriorityListRectangle.Left, DispathPriorityListRectangle.Top, DispathPriorityListRectangle.Left + 5, DispathPriorityListRectangle.Top + 5)
+            DispathGraphics.DrawLine(Pens.LightGray, DispathPriorityListRectangle.Left, DispathPriorityListRectangle.Bottom, DispathPriorityListRectangle.Left + 5, DispathPriorityListRectangle.Bottom + 5)
+            '绘制作业队列信息标题头
+            DispathGraphics.DrawString("第 " & ListIndex & " 优先级 / 时间片：" & (ListIndex + 1) * TimeSliceNumeric.Value, Me.Font, Brushes.Red, New Point(DispathPriorityListRectangle.Left + 11, DispathPriorityListRectangle.Top + 6))
+            DispathGraphics.DrawString("第 " & ListIndex & " 优先级 / 时间片：" & (ListIndex + 1) * TimeSliceNumeric.Value, Me.Font, Brushes.Yellow, New Point(DispathPriorityListRectangle.Left + 10, DispathPriorityListRectangle.Top + 5))
+            LastTop = DispathRectangle.Top + 40
             If PriorityList(ListIndex).Count > 0 Then
-                '当前队列含有作业，绘制作业队列信息标题头
-                DispathGraphics.DrawString("第 " & ListIndex & " 优先级队列 / 时间片长度：" & (ListIndex + 1) * TimeSliceNumeric.Value, Me.Font, Brushes.Red, New Point(WaitRectangle.Left - 99, LastTop + 1))
-                DispathGraphics.DrawString("第 " & ListIndex & " 优先级队列 / 时间片长度：" & (ListIndex + 1) * TimeSliceNumeric.Value, Me.Font, Brushes.Yellow, New Point(WaitRectangle.Left - 100, LastTop))
-                LastTop += 15
                 '遍历该队列里所有作业
                 For ElementIndex As Integer = 0 To PriorityList(ListIndex).Count - 1
                     InsWaitJob = PriorityList(ListIndex)(ElementIndex)
                     TempPen = New Pen(InsWaitJob.Color, 1)
                     '计算作业位置和大小
-                    WaitJobPoint = New Point(WaitRectangle.Left - DispathCellWidth * InsWaitJob.TimeSlice, LastTop)
-                    WaitJobSize = New Size(DispathCellWidth * InsWaitJob.TimeLength, DispathCellHeight)
+                    WaitJobPoint = New Point(DispathPriorityListRectangle.Left, LastTop)
+                    WaitJobSize = New Size(PriorityListCellWidth * (InsWaitJob.TimeLength - InsWaitJob.TimeSlice), DispathCellHeight)
                     LastTop += DispathCellHeight + 2
-                    '绘制作业立体阴影
+                    ''绘制作业立体阴影
                     DispathGraphics.DrawLine(TempPen, WaitJobPoint.X, WaitJobPoint.Y + WaitJobSize.Height, WaitJobPoint.X + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
                     DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width, WaitJobPoint.Y, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + ShadowDistance)
                     DispathGraphics.DrawLine(TempPen, WaitJobPoint.X + WaitJobSize.Width, WaitJobPoint.Y + WaitJobSize.Height, WaitJobPoint.X + WaitJobSize.Width + ShadowDistance, WaitJobPoint.Y + WaitJobSize.Height + ShadowDistance)
@@ -1091,15 +1102,16 @@ Public Class MainForm
                     '填充作业并显示作业信息
                     DispathGraphics.FillRectangle(New SolidBrush(InsWaitJob.Color), New Rectangle(WaitJobPoint, WaitJobSize))
                     WaitJobPoint.Offset(3, 3)
-                    DispathGraphics.DrawString(InsWaitJob.Name & " / 队列级：" & ListIndex & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.Black, WaitJobPoint)
+                    DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.Black, WaitJobPoint)
                     WaitJobPoint.Offset(-1, -1)
-                    DispathGraphics.DrawString(InsWaitJob.Name & " / 队列级：" & ListIndex & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.White, WaitJobPoint)
+                    DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.White, WaitJobPoint)
                 Next
             End If
+            DispathGraphics.DrawRectangle(Pens.White, DispathPriorityListRectangle)
+            DispathPriorityListRectangle.Location = New Point(DispathPriorityListRectangle.Left + DispathPriorityListRectangle.Width, DispathRectangle.Top)
         Next
-        '绘制等待分界线上层线条
-        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left, WaitRectangle.Bottom)
-        DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, WaitRectangle.Bottom, WaitRectangle.Left + ShadowDistance, WaitRectangle.Bottom + ShadowDistance)
+        DispathGraphics.DrawLine(Pens.LightGray, DispathPriorityListRectangle.Left, DispathPriorityListRectangle.Top, DispathPriorityListRectangle.Left + 5, DispathPriorityListRectangle.Top + 5)
+        DispathGraphics.DrawLine(Pens.LightGray, DispathPriorityListRectangle.Left, DispathPriorityListRectangle.Bottom, DispathPriorityListRectangle.Left + 5, DispathPriorityListRectangle.Bottom + 5)
 
         Return DispathImage
     End Function
@@ -1125,8 +1137,6 @@ Public Class MainForm
 
     Private Sub PlayPauseButton_Click(sender As Object, e As EventArgs) Handles PlayPauseButton.Click
         If PlayPauseButton.Text = "播放   " Then
-            PlayPauseButton.Text = "停止   "
-            PlayPauseButton.Image = My.Resources.UnityResource.Pause
             If SystemClock = 0 Then
                 Select Case DispathComboBox.SelectedIndex
                     Case < 4
@@ -1143,12 +1153,22 @@ Public Class MainForm
                         For Index As Integer = 0 To PriorityListSubscript
                             PriorityList(Index) = New List(Of JobClass)
                         Next
+                        DispathPriorityListRectangle = New Rectangle(0, 0, DispathRectangle.Width / PriorityList.Count, DispathRectangle.Height)
+                        PriorityListCellWidth = DispathPriorityListRectangle.Width / Max_SystemTime
                         LogLabel.TextBox.Text &= String.Format("系统时间：{0}  ||  生成 0~{1} 级调度队列，时间片递增！", SystemClock, PriorityListSubscript) & vbCrLf
                         DispathComboBox.Enabled = False
                         TimeSliceNumeric.Enabled = False
                 End Select
                 If Not TimeLineLabel.Visible Then TimeLineLabel.Show()
+            Else
+                If DispathComboBox.SelectedIndex < 5 Then
+                    If CheckAllJobCompeletFCFS_SJF_HRN_HPF_RR() Then Exit Sub
+                Else
+                    If CheckAllJobCompeletMFQ() Then Exit Sub
+                End If
             End If
+            PlayPauseButton.Text = "停止   "
+            PlayPauseButton.Image = My.Resources.UnityResource.Pause
             ExecuteFunctionComman()
             SystemClockTimer.Start()
         Else
