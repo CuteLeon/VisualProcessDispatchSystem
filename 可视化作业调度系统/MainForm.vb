@@ -1147,8 +1147,10 @@ Public Class MainForm
                         NextJobTipLabel.Text = "下次应执行作业 ▶"
                         DispathComboBox.Enabled = False
                     Case 5
-                        PriorityListSubscript = Math.Sqrt(TimeSliceNumeric.Value ^ 2 + 8 * TimeSliceNumeric.Value * Max_SystemTime) / (2 * TimeSliceNumeric.Value) - 1 / 2
-                        PriorityListSubscript = Fix(PriorityListSubscript) - (Fix(PriorityListSubscript) < PriorityListSubscript)
+                        Dim TempDouble As Double
+                        TempDouble = Math.Sqrt(TimeSliceNumeric.Value ^ 2 + 8 * TimeSliceNumeric.Value * Max_SystemTime) / (2 * TimeSliceNumeric.Value) - 1 / 2
+                        TempDouble = Fix(TempDouble) - (Fix(TempDouble) < TempDouble)
+                        PriorityListSubscript = CInt(TempDouble - 1)
                         ReDim PriorityList(PriorityListSubscript)
                         For Index As Integer = 0 To PriorityListSubscript
                             PriorityList(Index) = New List(Of JobClass)
