@@ -873,9 +873,9 @@ Public Class MainForm
             End If
             WaitJobPoint.Offset(3, 3)
             '显示作业信息
-            DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.Black, WaitJobPoint)
+            DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.Black, Math.Max(1, WaitJobPoint.X + 1), WaitJobPoint.Y + 1)
             WaitJobPoint.Offset(-1, -1)
-            DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.White, WaitJobPoint)
+            DispathGraphics.DrawString(InsWaitJob.Name & " / 时间片：" & InsWaitJob.TimeSlice & " of " & InsWaitJob.TimeLength, Me.Font, Brushes.White, Math.Max(0, WaitJobPoint.X), WaitJobPoint.Y)
         Next
         '绘制等待分界线上层线条
         DispathGraphics.DrawLine(Pens.Red, WaitRectangle.Left, ExecuteRectangle.Top, WaitRectangle.Left, WaitRectangle.Bottom)
