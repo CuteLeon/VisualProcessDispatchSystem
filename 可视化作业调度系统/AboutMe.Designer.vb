@@ -34,9 +34,9 @@ Partial Class AboutMe
         Me.LinkLabel.ForeColor = System.Drawing.Color.White
         Me.LinkLabel.Location = New System.Drawing.Point(472, 204)
         Me.LinkLabel.Name = "LinkLabel"
-        Me.LinkLabel.Size = New System.Drawing.Size(281, 50)
+        Me.LinkLabel.Size = New System.Drawing.Size(291, 50)
         Me.LinkLabel.TabIndex = 0
-        Me.LinkLabel.Text = "https://github.com/CuteLeon" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "/VisualProcessDispathSystem"
+        Me.LinkLabel.Text = "https://github.com/CuteLeon" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "/VisualProcessDispatchSystem"
         '
         'CloseButton
         '
