@@ -285,7 +285,7 @@ Public Class MainForm
         '拦截窗体关闭事件
         If Me.Tag = True Then Exit Sub
         e.Cancel = True
-        If MsgBox("就这样退出吗？真的不爱了？", MsgBoxStyle.OkCancel Or MsgBoxStyle.Question, "确定不留下么？") = MsgBoxResult.Ok Then Me.Tag = True : Application.Exit()
+        If MsgBox("就这样退出吗？", MsgBoxStyle.OkCancel Or MsgBoxStyle.Question, "确定不留下么？") = MsgBoxResult.Ok Then Me.Tag = True : Application.Exit()
     End Sub
 
 #End Region
@@ -300,7 +300,7 @@ Public Class MainForm
 
     Private Sub CloseButton_Click(sender As Object, e As EventArgs) Handles CloseButton.Click
         '关闭
-        If MsgBox("就这样退出吗？真的不爱了？", MsgBoxStyle.OkCancel Or MsgBoxStyle.Question, "确定不留下么？") = MsgBoxResult.Ok Then Me.Tag = True : Application.Exit()
+        If MsgBox("就这样退出吗？", MsgBoxStyle.OkCancel Or MsgBoxStyle.Question, "确定不留下么？") = MsgBoxResult.Ok Then Me.Tag = True : Application.Exit()
     End Sub
 
     Private Sub SettingButton_Click(sender As Object, e As EventArgs) Handles SettingButton.Click
